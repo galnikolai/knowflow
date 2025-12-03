@@ -11,28 +11,87 @@ git push origin main
 ## Шаг 2: Создайте аккаунт на Vercel
 
 1. Перейдите на https://vercel.com
-2. Войдите через GitHub
-3. Нажмите "New Project"
-4. Выберите ваш репозиторий `knowflow`
+2. Нажмите "Sign Up" или "Log In"
+3. Войдите через GitHub (рекомендуется)
+4. После входа вы попадете на Dashboard
+5. Нажмите большую кнопку **"Add New..."** → **"Project"** (или просто **"New Project"**)
+6. Вы увидите список ваших GitHub репозиториев
+7. Найдите и выберите репозиторий `knowflow`
+8. Нажмите **"Import"** рядом с репозиторием
 
-## Шаг 3: Настройте переменные окружения
+## Шаг 3: Настройте проект
 
-В Vercel Dashboard → Settings → Environment Variables добавьте:
+После импорта репозитория вы увидите страницу настройки проекта:
 
-```
-NEXT_PUBLIC_SUPABASE_URL = ваш_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY = ваш_supabase_anon_key
-TELEGRAM_BOT_TOKEN = 8270666542:AAE2M6MUIEM2KUW1GpWUKG52aszkj70x5fA
-TELEGRAM_CRON_SECRET = ваш_секретный_ключ
-```
+1. **Framework Preset**: Vercel автоматически определит "Next.js" ✅
+2. **Root Directory**: Оставьте пустым (если проект в корне) ✅
+3. **Build Command**: `npm run build` (уже заполнено) ✅
+4. **Output Directory**: `.next` (уже заполнено) ✅
+5. **Install Command**: `npm install` (уже заполнено) ✅
 
-## Шаг 4: Деплой
+## Шаг 4: Настройте переменные окружения
 
-1. Нажмите "Deploy"
-2. Дождитесь завершения (2-3 минуты)
-3. Получите URL: `https://your-app.vercel.app`
+**Перед деплоем** добавьте переменные окружения:
 
-## Шаг 5: Установите Telegram webhook
+1. Прокрутите страницу вниз до секции **"Environment Variables"**
+2. Нажмите **"Add"** или **"Add Variable"**
+3. Добавьте каждую переменную:
+
+   - **Name**: `NEXT_PUBLIC_SUPABASE_URL`
+     **Value**: ваш_supabase_url
+     **Environment**: Production, Preview, Development (отметьте все три)
+
+   - **Name**: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+     **Value**: ваш_supabase_anon_key
+     **Environment**: Production, Preview, Development
+
+   - **Name**: `TELEGRAM_BOT_TOKEN`
+     **Value**: `8270666542:AAE2M6MUIEM2KUW1GpWUKG52aszkj70x5fA`
+     **Environment**: Production, Preview, Development
+
+   - **Name**: `TELEGRAM_CRON_SECRET`
+     **Value**: ваш_секретный_ключ (можно сгенерировать случайную строку)
+     **Environment**: Production, Preview, Development
+
+4. После добавления всех переменных прокрутите вниз
+
+## Шаг 5: Деплой
+
+### Вариант A: Если видите кнопку "Deploy"
+
+1. Внизу страницы настройки найдите большую кнопку **"Deploy"** (синяя кнопка)
+2. Нажмите **"Deploy"**
+3. Вы увидите процесс сборки в реальном времени
+4. Дождитесь завершения (обычно 2-3 минуты)
+
+### Вариант B: Если НЕ видите кнопку "Deploy" (часто бывает!)
+
+**Vercel может автоматически начать деплой или кнопка в другом месте:**
+
+1. **Проверьте вкладку "Deployments":**
+   - В левом меню нажмите **"Deployments"**
+   - Если видите деплой "Building..." - просто дождитесь ✅
+   - Если видите деплой "Ready" - всё готово! ✅
+
+2. **Или запустите деплой через Git:**
+   ```bash
+   git add .
+   git commit -m "Trigger deployment"
+   git push origin main
+   ```
+   После push Vercel автоматически начнет деплой!
+
+3. **Или найдите кнопку "Redeploy":**
+   - Перейдите в **Deployments**
+   - Вверху страницы должна быть кнопка **"Redeploy"**
+
+**После успешного деплоя:**
+- ✅ Статус "Ready" во вкладке Deployments
+- URL вашего приложения: `https://your-app.vercel.app` или `https://knowflow-xxx.vercel.app`
+
+**Подробная инструкция:** см. `VERCEL_DEPLOY_TROUBLESHOOTING.md`
+
+## Шаг 6: Установите Telegram webhook
 
 ```bash
 curl -X POST "https://api.telegram.org/bot8270666542:AAE2M6MUIEM2KUW1GpWUKG52aszkj70x5fA/setWebhook" \
@@ -40,7 +99,7 @@ curl -X POST "https://api.telegram.org/bot8270666542:AAE2M6MUIEM2KUW1GpWUKG52asz
   -d '{"url": "https://YOUR_VERCEL_URL.vercel.app/api/telegram/webhook"}'
 ```
 
-## Шаг 6: Настройте Cron Job
+## Шаг 7: Настройте Cron Job
 
 Vercel автоматически настроит cron job из `vercel.json`:
 - Путь: `/api/telegram/send-cards`
