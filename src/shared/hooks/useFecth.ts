@@ -21,7 +21,7 @@ export function useFetch<T>(url: string, options?: RequestInit) {
     return () => {
       isMounted = false;
     };
-  }, [url]);
+  }, [url, options]);
 
   return { data, loading, error };
 }

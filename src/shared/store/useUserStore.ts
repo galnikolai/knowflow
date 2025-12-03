@@ -8,12 +8,16 @@ type User = {
 
 interface UserStore {
   user: User | null;
-  setUser: (user: User) => void;
+  userLoading: boolean;
+  setUser: (user: User | null) => void;
+  setUserLoading: (loading: boolean) => void;
   logout: () => void;
 }
 
 export const useUserStore = create<UserStore>((set) => ({
   user: null,
+  userLoading: true,
   setUser: (user) => set({ user }),
+  setUserLoading: (loading) => set({ userLoading: loading }),
   logout: () => set({ user: null }),
 }));

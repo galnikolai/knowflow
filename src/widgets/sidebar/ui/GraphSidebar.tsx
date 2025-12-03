@@ -8,12 +8,10 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarInput,
-  SidebarInset,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/shared/ui/sidebar";
 
 import {
@@ -22,15 +20,7 @@ import {
   CollapsibleTrigger,
 } from "@/shared/ui/collapsible";
 import { AppSidebar } from "./Sidebar";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/shared/ui/breadcrumb";
-import { Separator } from "@radix-ui/react-separator";
+import { createFileFilterStore, type TreeNode } from "@/lib/fileFilter";
 
 const dataFiles = {
   changes: [
@@ -75,12 +65,17 @@ const dataFiles = {
   ],
 };
 
+const useFileFilterStore = createFileFilterStore(dataFiles.tree as TreeNode[]);
+
 export function GraphSidebar({
   children,
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   // Note: I'm using state to show active item.
   // IRL you should use the url/router.
+  const filtered = useFileFilterStore((state) => state.filtered);
+  const filter = useFileFilterStore((state) => state.filter);
+  const setFilter = useFileFilterStore((state) => state.setFilter);
 
   return (
     <SidebarProvider
@@ -103,14 +98,27 @@ export function GraphSidebar({
             <div className="flex w-full items-center justify-between">
               <div className="text-foreground text-base font-medium">Graph</div>
             </div>
-            <SidebarInput placeholder="Type to search..." />
+            <SidebarInput
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup className="px-0">
               <SidebarGroupContent>
-                {dataFiles.tree.map((item, index) => (
-                  <Tree key={index} item={item} />
-                ))}
+                {filter
+                  ? filtered.map((item) => (
+                      <SidebarMenuButton
+                        key={item.path}
+                        className="data-[active=true]:bg-transparent"
+                      >
+                        {item.type === "file" ? <File /> : <Folder />}
+                        {item.name}
+                      </SidebarMenuButton>
+                    ))
+                  : (dataFiles.tree as TreeNode[]).map((item, idx) => (
+                      <Tree key={idx} item={item} />
+                    ))}
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
@@ -121,7 +129,9 @@ export function GraphSidebar({
   );
 }
 
-function Tree({ item }: { item: string | any[] }) {
+type TreeItem = string | TreeItem[];
+
+function Tree({ item }: { item: TreeItem }) {
   const [name, ...items] = Array.isArray(item) ? item : [item];
   if (!items.length) {
     return (

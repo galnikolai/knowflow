@@ -1,0 +1,16 @@
+name: Telegram Cron Job
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Каждый час
+  workflow_dispatch:  # Ручной запуск
+
+jobs:
+  send-cards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send cards to Telegram users
+        run: |
+          curl -X POST ${{ secrets.APP_URL }}/api/telegram/send-cards \
+            -H "Authorization: Bearer ${{ secrets.TELEGRAM_CRON_SECRET }}"
+

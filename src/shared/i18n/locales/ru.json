@@ -1,0 +1,78 @@
+{
+  "collection": {
+    "title": "Коллекция",
+    "subtitle": "Организуйте и храните свои знания",
+    "sections": {
+      "collections": "Коллекции",
+      "notes": "Заметки"
+    },
+    "buttons": {
+      "newCollection": "Новая коллекция",
+      "newNote": "Новая заметка",
+      "filters": "Фильтры",
+      "open": "Открыть",
+      "createCollection": "Создать коллекцию"
+    },
+    "search": {
+      "collections": "Поиск по коллекциям...",
+      "notes": "Поиск по заметкам..."
+    },
+    "items": {
+      "count": "элементов",
+      "updated": "Обновлено"
+    },
+    "createCollection": {
+      "title": "Создать коллекцию",
+      "description": "Начните собирать знания в организованном виде"
+    },
+    "emptyState": {
+      "title": "Нет открытых заметок",
+      "description": "Выберите заметку из боковой панели или создайте новую"
+    },
+    "saving": "Сохраняю...",
+    "newNote": "Новая заметка",
+    "newFolder": "Новая папка"
+  },
+  "sidebar": {
+    "collection": "Коллекция",
+    "trainer": "Тренажер",
+    "settings": "Настройки"
+  },
+  "login": {
+    "title": "Вход",
+    "signupTitle": "Регистрация",
+    "description": "Введите email и пароль для входа.",
+    "signupDescription": "Введите email и пароль для регистрации.",
+    "email": "Email",
+    "password": "Пароль",
+    "submit": "Войти",
+    "signup": "Зарегистрироваться",
+    "noAccount": "Нет аккаунта?",
+    "hasAccount": "Уже есть аккаунт?",
+    "signIn": "Войти",
+    "success": "Вход выполнен!",
+    "signupSuccess": "Регистрация успешна!",
+    "checkEmail": "Проверьте почту для подтверждения!",
+    "unknownError": "Произошла неизвестная ошибка."
+  },
+  "notes": {
+    "newNote": "Новая заметка",
+    "newFolder": "Новая папка",
+    "saving": "Сохраняю...",
+    "placeholder": "Начните писать заметку...",
+    "fileStructure": "Файловая структура",
+    "search": "Поиск...",
+    "loading": "Загрузка...",
+    "error": "Ошибка:",
+    "name": "Название",
+    "rootName": "Корень: название"
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "close": "Закрыть"
+  }
+}

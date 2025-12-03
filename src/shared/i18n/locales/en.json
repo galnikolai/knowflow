@@ -1,0 +1,78 @@
+{
+  "collection": {
+    "title": "Collection",
+    "subtitle": "Organize and store your knowledge",
+    "sections": {
+      "collections": "Collections",
+      "notes": "Notes"
+    },
+    "buttons": {
+      "newCollection": "New Collection",
+      "newNote": "New Note",
+      "filters": "Filters",
+      "open": "Open",
+      "createCollection": "Create Collection"
+    },
+    "search": {
+      "collections": "Search collections...",
+      "notes": "Search notes..."
+    },
+    "items": {
+      "count": "items",
+      "updated": "Updated"
+    },
+    "createCollection": {
+      "title": "Create Collection",
+      "description": "Start collecting knowledge in an organized way"
+    },
+    "emptyState": {
+      "title": "No open notes",
+      "description": "Select a note from the sidebar or create a new one"
+    },
+    "saving": "Saving...",
+    "newNote": "New Note",
+    "newFolder": "New Folder"
+  },
+  "sidebar": {
+    "collection": "Collection",
+    "trainer": "Trainer",
+    "settings": "Settings"
+  },
+  "login": {
+    "title": "Login",
+    "signupTitle": "Sign Up",
+    "description": "Enter email and password to login.",
+    "signupDescription": "Enter email and password to sign up.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Login",
+    "signup": "Sign Up",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signIn": "Sign In",
+    "success": "Login successful!",
+    "signupSuccess": "Registration successful!",
+    "checkEmail": "Check your email for confirmation!",
+    "unknownError": "An unknown error occurred."
+  },
+  "notes": {
+    "newNote": "New Note",
+    "newFolder": "New Folder",
+    "saving": "Saving...",
+    "placeholder": "Start writing a note...",
+    "fileStructure": "File Structure",
+    "search": "Search...",
+    "loading": "Loading...",
+    "error": "Error:",
+    "name": "Name",
+    "rootName": "Root: name"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close"
+  }
+}

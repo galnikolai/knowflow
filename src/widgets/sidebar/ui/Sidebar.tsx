@@ -1,7 +1,10 @@
 import * as React from "react";
-import { GitGraph, GraduationCap, NotebookTabs, Settings } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { BookOpen, Zap, GraduationCap } from "lucide-react";
 
-import { NavUser } from "@/entities/nav-user/NavUser";
+import { UserProfilePopover } from "@/entities/nav-user/UserProfilePopover";
+import { useTheme } from "@/shared/context/useTheme";
+import { SettingsDialog } from "@/shared/settings-dialog";
 
 import {
   Sidebar,
@@ -17,9 +20,10 @@ import {
 } from "@/shared/ui/sidebar";
 
 import { ROUTES } from "@/shared/config/routes";
-import { Link } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-const data = {
+const getNavData = (t: (key: string) => string) => ({
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -27,32 +31,43 @@ const data = {
   },
   navMain: [
     {
-      title: "Notes",
-      url: ROUTES.NOTES,
-      icon: NotebookTabs,
-      isActive: false,
-    },
-    {
-      title: "Graph",
-      url: ROUTES.GRAPH,
-      icon: GitGraph,
+      title: t("sidebar.collection"),
+      url: ROUTES.COLLECTION,
+      icon: BookOpen,
       isActive: true,
+      theme: "collection" as const,
     },
-
     {
-      title: "Settings",
-      url: ROUTES.SETTINGS,
-      icon: Settings,
+      title: t("sidebar.trainer"),
+      url: ROUTES.TRAINER,
+      icon: Zap,
       isActive: false,
+      theme: "trainer" as const,
     },
   ],
-};
+});
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  // Note: I'm using state to show active item.
-  // IRL you should use the url/router.
+export function AppSidebar({ children }: { children?: React.ReactNode }) {
+  const { t } = useTranslation();
   const { setOpen } = useSidebar();
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0]);
+  const { setTheme } = useTheme();
+  const pathname = usePathname();
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+
+  const data = getNavData(t);
+
+  // Определяем активный элемент на основе текущего маршрута
+  const activeItem = React.useMemo(() => {
+    const currentPath = pathname;
+    const found = data.navMain.find((item) => {
+      // Для тренажера проверяем, начинается ли путь с ROUTES.TRAINER
+      if (item.url === ROUTES.TRAINER) {
+        return currentPath.startsWith(ROUTES.TRAINER);
+      }
+      return currentPath.startsWith(item.url);
+    });
+    return found || data.navMain[0];
+  }, [pathname, data.navMain]);
 
   return (
     <Sidebar
@@ -81,33 +96,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent className="px-1.5 md:px-0">
             <SidebarMenu>
               {data.navMain.map((item) => (
-                <Link to={item.url} key={item.title}>
-                  <SidebarMenuItem key={item.title} className="">
-                    <SidebarMenuButton
-                      tooltip={{
-                        children: item.title,
-                        hidden: false,
-                      }}
-                      onClick={() => {
-                        setActiveItem(item);
-                        setOpen(true);
-                      }}
-                      isActive={activeItem?.title === item.title}
-                      className="px-2.5 md:px-2"
-                    >
+                <SidebarMenuItem key={item.title} className="">
+                  <SidebarMenuButton
+                    tooltip={{
+                      children: item.title,
+                      hidden: false,
+                    }}
+                    onClick={() => {
+                      setTheme(item.theme);
+                      setOpen(true);
+                    }}
+                    isActive={activeItem?.title === item.title}
+                    className="px-2.5 md:px-2"
+                    asChild
+                  >
+                    <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </Link>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {children && <div className="flex-1 flex flex-col">{children}</div>}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <UserProfilePopover onOpenSettings={() => setSettingsOpen(true)} />
       </SidebarFooter>
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </Sidebar>
   );
 }

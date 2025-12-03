@@ -1,8 +1,9 @@
 import { useEffect } from "react";
+import type { DependencyList } from "react";
 
 export function useDebounceEffect(
   effect: () => void | (() => void),
-  deps: any[],
+  deps: DependencyList,
   delay: number
 ) {
   useEffect(() => {
@@ -13,5 +14,6 @@ export function useDebounceEffect(
     return () => {
       clearTimeout(handler);
     };
-  }, [...deps, delay]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...deps, delay, effect]);
 }
