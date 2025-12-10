@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/shared/context/ThemeContext";
 // Инициализация i18n
 import "@/shared/i18n/config";
 // Импорт стилей
-import "@/app-old/index.css";
+import "@/styles/index.css";
 
 const geistSans = Geist({
   subsets: ["latin"],

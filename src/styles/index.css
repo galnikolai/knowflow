@@ -1,0 +1,153 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.5rem;
+  /* Светлая тема - минималистичная */
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #00ffff;
+  --primary-foreground: #141417;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f5f5f5;
+  --muted-foreground: #666666;
+  --accent: #f5f5f5;
+  --accent-foreground: #1a1a1a;
+  --destructive: #ef4444;
+  --border: rgba(0, 0, 0, 0.1);
+  --tw-border-style: rgba(0, 0, 0, 0.1);
+  --input: rgba(0, 0, 0, 0.05);
+  --ring: #00ffff;
+  --chart-1: #00ffff;
+  --chart-2: #8a2be2;
+  --chart-3: #00d4ff;
+  --chart-4: #a855f7;
+  --chart-5: #06b6d4;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #00ffff;
+  --sidebar-primary-foreground: #141417;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: rgba(0, 0, 0, 0.1);
+  --sidebar-ring: #00ffff;
+
+  /* Градиентные переменные в стиле open-notebook.ai */
+  --gradient-start: #00ffff;
+  --gradient-end: #8a2be2;
+  --gradient: linear-gradient(
+    135deg,
+    var(--gradient-start) 0%,
+    var(--gradient-end) 100%
+  );
+}
+
+.dark {
+  /* Темная тема в стиле open-notebook.ai */
+  --background: #141417;
+  --foreground: #f8f8f8;
+  --card: #1a1a1d;
+  --card-foreground: #f8f8f8;
+  --popover: #1a1a1d;
+  --popover-foreground: #f8f8f8;
+  --primary: #00ffff;
+  --primary-foreground: #141417;
+  --secondary: #252529;
+  --secondary-foreground: #f8f8f8;
+  --muted: #252529;
+  --muted-foreground: #aaaaaa;
+  --accent: #252529;
+  --accent-foreground: #f8f8f8;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.08);
+  --tw-border-style: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #00ffff;
+  --chart-1: #00ffff;
+  --chart-2: #8a2be2;
+  --chart-3: #00d4ff;
+  --chart-4: #a855f7;
+  --chart-5: #06b6d4;
+  --sidebar: #1a1a1d;
+  --sidebar-foreground: #f8f8f8;
+  --sidebar-primary: #00ffff;
+  --sidebar-primary-foreground: #141417;
+  --sidebar-accent: #252529;
+  --sidebar-accent-foreground: #f8f8f8;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #00ffff;
+}
+
+@theme inline {
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-border-style: var(--tw-border-style);
+  --color-border: var(--border);
+}
+
+/* Flashcard flip animation */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Градиентные утилиты в стиле open-notebook.ai */
+.gradient-text {
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-border {
+  position: relative;
+  background: var(--background);
+  border-radius: var(--radius);
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  padding: 1px;
+  background: var(--gradient);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Базовые стили для body */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
