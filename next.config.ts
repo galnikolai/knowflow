@@ -30,6 +30,16 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["tailwindcss"],
   },
+  // Редирект с корня на /collection
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/collection",
+        permanent: false, // временный редирект (307)
+      },
+    ];
+  },
   // Для Docker деплоя (опционально)
   // output: 'standalone',
 };
