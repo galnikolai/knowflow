@@ -1,11 +1,19 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { useState } from "react";
-import ForceGraph2D from "react-force-graph-2d";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+
+// Динамический импорт с отключенным SSR, так как react-force-graph-2d использует window
+const ForceGraph2D = dynamic(
+  () => import("react-force-graph-2d").then((mod) => mod.default),
+  { ssr: false }
+);
 
 // import "aframe"; // гарантируем, что AFRAME глобален
 // import "aframe-extras"; // extras используют глобальный AFRAME
@@ -32,6 +40,19 @@ interface Props {
 
 export function KnowledgeGraph({ data }: Props) {
   const [selectedNode, setSelectedNode] = useState<NoteNode | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="w-[80vw] h-full overflow-hidden relative flex items-center justify-center">
+        <p>Загрузка графа...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-[80vw] h-full overflow-hidden relative">

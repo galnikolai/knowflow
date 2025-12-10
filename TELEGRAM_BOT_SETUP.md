@@ -58,18 +58,47 @@ curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook" \
 
 ### 5. Настройка cron job для автоматической отправки
 
-Настройте cron job для вызова endpoint отправки карточек:
+⚠️ **Важно: Лимиты Vercel Cron Jobs**
 
-```bash
-# Каждый час проверяем и отправляем карточки
-0 * * * * curl -X POST https://your-domain.com/api/telegram/send-cards \
-  -H "Authorization: Bearer YOUR_CRON_SECRET"
-```
+- **Hobby план (бесплатный)**: только 1 раз в день, нет гарантии точного времени
+- **Pro план**: неограниченные вызовы, точное время выполнения
 
-Или используйте сервисы типа:
-- [Vercel Cron](https://vercel.com/docs/cron-jobs)
-- [GitHub Actions](https://docs.github.com/en/actions)
-- [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
+**Текущая конфигурация** в `vercel.json` настроена на **каждый час** - это **НЕ работает на Hobby плане!**
+
+**Рекомендуемое решение для Hobby плана: GitHub Actions** (уже настроено)
+
+1. Откройте `.github/workflows/telegram-cron.yml`
+2. Добавьте секреты в GitHub:
+   - Settings → Secrets and variables → Actions
+   - `APP_URL`: URL вашего Vercel приложения
+   - `TELEGRAM_CRON_SECRET`: ваш секретный ключ
+3. GitHub Actions будет запускать cron job каждый час бесплатно!
+
+**Подробнее:** см. `VERCEL_CRON_LIMITS.md`
+
+---
+
+**Альтернативные варианты:**
+
+1. **Vercel Cron** (в `vercel.json`):
+   ```json
+   {
+     "crons": [
+       {
+         "path": "/api/telegram/send-cards",
+         "schedule": "0 * * * *"  // Каждый час (только Pro план!)
+       }
+     ]
+   }
+   ```
+
+2. **GitHub Actions** (рекомендуется для Hobby):
+   - Файл: `.github/workflows/telegram-cron.yml`
+   - Бесплатно, можно каждые 5 минут
+
+3. **Внешние сервисы:**
+   - [cron-job.org](https://cron-job.org) - бесплатно
+   - [EasyCron](https://www.easycron.com) - бесплатно с ограничениями
 
 ## Использование
 
