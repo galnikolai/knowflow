@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
 import { useFlashcardsStore } from "@/shared/store/useFlashcardsStore";
 import { useLearnspacesStore } from "@/shared/store/useLearnspacesStore";
 import { useNotesStore } from "@/shared/store/useNotesStore";
@@ -20,8 +20,8 @@ import { useTheme } from "@/shared/context/useTheme";
 
 export const Cards: React.FC = () => {
   const { themeColors } = useTheme();
-  const searchParams = useSearchParams();
-  const learnspaceId = searchParams.get("learnspace");
+  const router = useRouter();
+  const learnspaceId = router.query.learnspace as string | undefined;
   
   const cards = useFlashcardsStore((s) => s.cards);
   const fetchCards = useFlashcardsStore((s) => s.fetchCards);

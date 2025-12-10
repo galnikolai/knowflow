@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
 import { themeConfig } from "./themeConfig";
 import type { SectionTheme } from "./types";
 import { ThemeContext } from "./ThemeContext.ts";
@@ -10,7 +10,8 @@ import { ROUTES } from "@/shared/config/routes";
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const pathname = usePathname();
+  const router = useRouter();
+  const pathname = router.pathname;
   const [currentTheme, setCurrentTheme] = useState<SectionTheme>("collection");
 
   // Автоматически определяем тему на основе текущего роута

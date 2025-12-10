@@ -13,7 +13,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/shared/api/supabase";
 import { useUserStore } from "@/shared/store/useUserStore";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 export function LoginForm({
   className,

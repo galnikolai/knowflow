@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { useLearnspacesStore } from "@/shared/store/useLearnspacesStore";
 import { useFlashcardsStore } from "@/shared/store/useFlashcardsStore";
 import { useNotesStore } from "@/shared/store/useNotesStore";
@@ -14,13 +14,13 @@ import { useTheme } from "@/shared/context/useTheme";
 export const Challenges: React.FC = () => {
   const { themeColors } = useTheme();
   const router = useRouter();
-  
+
   const learnspaces = useLearnspacesStore((s) => s.learnspaces);
   const fetchLearnspaces = useLearnspacesStore((s) => s.fetchLearnspaces);
-  
+
   const cards = useFlashcardsStore((s) => s.cards);
   const fetchCards = useFlashcardsStore((s) => s.fetchCards);
-  
+
   const notes = useNotesStore((s) => s.notes);
   const fetchNotes = useNotesStore((s) => s.fetchNotes);
 
@@ -33,9 +33,13 @@ export const Challenges: React.FC = () => {
   // Подсчитываем статистику для каждого learnspace
   const learnspacesWithStats = useMemo(() => {
     return learnspaces.map((ls) => {
-      const learnspaceCards = cards.filter((c) => ls.noteIds.includes(c.nodeId));
-      const dueCards = learnspaceCards.filter((c) => c.nextReview <= Date.now());
-      
+      const learnspaceCards = cards.filter((c) =>
+        ls.noteIds.includes(c.nodeId)
+      );
+      const dueCards = learnspaceCards.filter(
+        (c) => c.nextReview <= Date.now()
+      );
+
       return {
         ...ls,
         totalCards: learnspaceCards.length,
@@ -106,11 +110,17 @@ export const Challenges: React.FC = () => {
                 <div className="flex items-center gap-4 pt-4 border-t">
                   <div className="flex-1">
                     <div className="text-2xl font-bold">{ls.totalCards}</div>
-                    <div className="text-xs text-muted-foreground">Всего карточек</div>
+                    <div className="text-xs text-muted-foreground">
+                      Всего карточек
+                    </div>
                   </div>
                   <div className="flex-1">
-                    <div className="text-2xl font-bold text-primary">{ls.dueCards}</div>
-                    <div className="text-xs text-muted-foreground">К повторению</div>
+                    <div className="text-2xl font-bold text-primary">
+                      {ls.dueCards}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      К повторению
+                    </div>
                   </div>
                 </div>
 
@@ -119,7 +129,9 @@ export const Challenges: React.FC = () => {
                     variant="default"
                     className="flex-1 gap-2"
                     onClick={() => {
-                      router.push(`${ROUTES.TRAINER_STUDY}?learnspace=${ls.id}`);
+                      router.push(
+                        `${ROUTES.TRAINER_STUDY}?learnspace=${ls.id}`
+                      );
                     }}
                     disabled={ls.dueCards === 0}
                   >
@@ -130,7 +142,9 @@ export const Challenges: React.FC = () => {
                     variant="outline"
                     className="gap-2"
                     onClick={() => {
-                      router.push(`${ROUTES.TRAINER_CARDS}?learnspace=${ls.id}`);
+                      router.push(
+                        `${ROUTES.TRAINER_CARDS}?learnspace=${ls.id}`
+                      );
                     }}
                   >
                     <BookOpen className="w-4 h-4" />
