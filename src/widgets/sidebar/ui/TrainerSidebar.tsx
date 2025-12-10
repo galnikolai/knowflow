@@ -16,7 +16,7 @@ import { useWorkspacesStore } from "@/shared/store/useWorkspacesStore";
 import { useLearnspacesStore } from "@/shared/store/useLearnspacesStore";
 import { Folder, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { ROUTES } from "@/shared/config/routes";
 import { useNotesStore } from "@/shared/store/useNotesStore";
 import {

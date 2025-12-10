@@ -3,7 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Используем только App Router, игнорируем Pages Router
+  // Используем Pages Router
   pageExtensions: ["tsx", "ts", "jsx", "js"],
   transpilePackages: [
     "@radix-ui/react-avatar",

@@ -44,7 +44,7 @@ import { generateFlashcards } from "@/shared/api/ai-generator";
 import { useFlashcardsStore } from "@/shared/store/useFlashcardsStore";
 import { useUserStore } from "@/shared/store/useUserStore";
 import { useLearnspacesStore } from "@/shared/store/useLearnspacesStore";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { ROUTES } from "@/shared/config/routes";
 import { ExternalLink } from "lucide-react";
 
