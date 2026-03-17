@@ -224,7 +224,7 @@ export const CreateWorkspaceDialog: React.FC<CreateWorkspaceDialogProps> = ({
             <label className="block text-sm font-medium mb-2">
               Выберите файлы и папки из коллекции
             </label>
-            <div className="border rounded-lg p-4 overflow-y-auto flex-1 min-h-0 bg-muted/30">
+            <div className="rounded-lg p-4 overflow-y-auto flex-1 min-h-0 bg-muted/30">
               {tree.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
                   Нет файлов и папок в коллекции

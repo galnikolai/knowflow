@@ -213,7 +213,7 @@ export const Collection: React.FC = () => {
       >
         <div className="min-h-screen transition-all duration-300">
           {/* Табы */}
-          <div className="flex gap-1 mb-2 border-b pb-1 overflow-x-auto px-4 pt-4">
+          <div className="flex gap-1 mb-2 pb-2 overflow-x-auto px-4 pt-4">
             {openTabs.map((tab) => (
               <div
                 key={tab.id}
@@ -242,7 +242,7 @@ export const Collection: React.FC = () => {
           {/* Редактор */}
           {activeTab && !activeTab.note.is_folder && (
             <div className="mb-8 h-[calc(100vh-120px)] flex flex-col px-4">
-              <div className="bg-white rounded-lg p-4 flex-1 min-h-0">
+              <div className="bg-background rounded-lg p-4 flex-1 min-h-0">
                 {editingTitleId === activeTab.id ? (
                   <Input
                     value={titleEditValue}
@@ -255,7 +255,7 @@ export const Collection: React.FC = () => {
                         handleCancelTitleEdit();
                       }
                     }}
-                    className="font-semibold mb-2 text-lg border-2 focus-visible:ring-2"
+                    className="font-semibold mb-2 text-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     autoFocus
                   />
                 ) : (

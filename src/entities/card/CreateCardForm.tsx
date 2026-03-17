@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useFlashcardsStore } from "@/shared/store/useFlashcardsStore";
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
 
 interface Props {
   nodeId?: string; // можно связать с узлом графа
@@ -33,8 +35,8 @@ export const CreateCardForm: React.FC<Props> = ({ nodeId }) => {
     <form onSubmit={handleSubmit} className="space-y-4 max-w-md w-full">
       <div>
         <label className="block mb-1 font-medium">Вопрос</label>
-        <input
-          className="input input-bordered w-full"
+        <Input
+          className="w-full"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Введите вопрос"
@@ -42,16 +44,16 @@ export const CreateCardForm: React.FC<Props> = ({ nodeId }) => {
       </div>
       <div>
         <label className="block mb-1 font-medium">Ответ</label>
-        <input
-          className="input input-bordered w-full"
+        <Input
+          className="w-full"
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           placeholder="Введите ответ"
         />
       </div>
-      <button type="submit" className="btn btn-primary w-full">
+      <Button type="submit" className="w-full">
         Добавить карточку
-      </button>
+      </Button>
       {success && (
         <div className="text-green-600 mt-2">Карточка добавлена!</div>
       )}

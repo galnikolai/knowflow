@@ -36,7 +36,7 @@ export function StudySidebar({
         <AppSidebar />
         <Sidebar
           collapsible="none"
-          className="hidden flex-1 md:flex border-r bg-background"
+          className="hidden flex-1 md:flex bg-background"
         >
           <SidebarMenu>
             {cards.map((card) => (

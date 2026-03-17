@@ -19,7 +19,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/shared/ui/collapsible";
-import { File, Folder, ChevronRight, MoreVertical, GraduationCap } from "lucide-react";
+import {
+  File,
+  Folder,
+  ChevronRight,
+  MoreVertical,
+  GraduationCap,
+} from "lucide-react";
 import { NoteTreeToolbar } from "@/entities/note/NoteTreeToolbar";
 import { useNotesStore } from "@/shared/store/useNotesStore";
 import type { Note } from "@/shared/api/notes";
@@ -97,7 +103,9 @@ export function NotesSidebar({
     new Set()
   );
   const [isGenerating, setIsGenerating] = React.useState(false);
-  const [aiProvider, setAiProvider] = React.useState<"openai" | "ollama">("ollama");
+  const [aiProvider, setAiProvider] = React.useState<"openai" | "ollama">(
+    "ollama"
+  );
   const [ollamaModel, setOllamaModel] = React.useState("llama3.2");
 
   React.useEffect(() => {
@@ -205,13 +213,13 @@ export function NotesSidebar({
 
         // Проверяем, существует ли уже learnspace для этой заметки
         const existingLearnspace = getLearnspaceForNote(selectedNote.id);
-        
+
         if (!existingLearnspace) {
           // Создаем learnspace, связанный с заметкой/папкой
           const learnspaceName = selectedNote.is_folder
             ? `Тренировка: ${selectedNote.title}`
             : `Тренировка: ${selectedNote.title}`;
-          
+
           // Собираем все ID заметок для learnspace (сама заметка + все дочерние, если это папка)
           const noteIds: string[] = [selectedNote.id];
           if (selectedNote.is_folder) {
@@ -230,12 +238,16 @@ export function NotesSidebar({
 
           const newLearnspace = await addLearnspace(learnspaceName, noteIds);
           await fetchLearnspaces(); // Обновляем список learnspaces
-          
+
           // Переходим в тренажер с параметром learnspace
-          router.push(`${ROUTES.TRAINER_CHALLENGES}?learnspace=${newLearnspace.id}`);
+          router.push(
+            `${ROUTES.TRAINER_CHALLENGES}?learnspace=${newLearnspace.id}`
+          );
         } else {
           // Если learnspace уже существует, переходим к нему
-          router.push(`${ROUTES.TRAINER_CHALLENGES}?learnspace=${existingLearnspace.id}`);
+          router.push(
+            `${ROUTES.TRAINER_CHALLENGES}?learnspace=${existingLearnspace.id}`
+          );
         }
       }
 
@@ -277,7 +289,10 @@ export function NotesSidebar({
                   <Folder className="mr-1" />
                   <span className="flex-1 truncate">{node.title}</span>
                   {getLearnspaceForNote(node.id) && (
-                    <GraduationCap className="ml-1 w-3 h-3 text-primary" title="Есть тренировка" />
+                    <GraduationCap
+                      className="ml-1 w-3 h-3 text-primary"
+                      title="Есть тренировка"
+                    />
                   )}
                 </SidebarMenuButton>
               </CollapsibleTrigger>
@@ -324,7 +339,10 @@ export function NotesSidebar({
               <File className="mr-1" />
               <span className="flex-1 truncate">{node.title}</span>
               {getLearnspaceForNote(node.id) && (
-                <GraduationCap className="ml-1 w-3 h-3 text-primary" title="Есть тренировка" />
+                <GraduationCap
+                  className="ml-1 w-3 h-3 text-primary"
+                  title="Есть тренировка"
+                />
               )}
             </SidebarMenuButton>
             <DropdownMenu>
@@ -371,7 +389,7 @@ export function NotesSidebar({
       >
         <AppSidebar />
         <Sidebar collapsible="none" className="hidden flex-1 md:flex">
-          <SidebarHeader className="gap-3.5 border-b p-4">
+          <SidebarHeader className="gap-3.5 p-4">
             <div className="flex w-full items-center justify-between">
               <div className="text-foreground text-base font-medium">Файлы</div>
             </div>
@@ -418,11 +436,11 @@ export function NotesSidebar({
                 type="checkbox"
                 checked={selectedMethods.has("flashcards")}
                 onChange={() => toggleMethod("flashcards")}
-                className="w-4 h-4 rounded border-gray-300"
+                className="w-4 h-4 rounded bg-muted/50 text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
               />
               <span className="text-sm">Создание флеш-карточек</span>
             </label>
-            
+
             {selectedMethods.has("flashcards") && (
               <div className="ml-7 flex flex-col gap-3 mt-2">
                 <div className="flex flex-col gap-2">
@@ -434,7 +452,9 @@ export function NotesSidebar({
                         name="ai-provider"
                         value="openai"
                         checked={aiProvider === "openai"}
-                        onChange={(e) => setAiProvider(e.target.value as "openai" | "ollama")}
+                        onChange={(e) =>
+                          setAiProvider(e.target.value as "openai" | "ollama")
+                        }
                         className="w-4 h-4"
                       />
                       <span className="text-sm">OpenAI (быстро, платно)</span>
@@ -445,25 +465,35 @@ export function NotesSidebar({
                         name="ai-provider"
                         value="ollama"
                         checked={aiProvider === "ollama"}
-                        onChange={(e) => setAiProvider(e.target.value as "openai" | "ollama")}
+                        onChange={(e) =>
+                          setAiProvider(e.target.value as "openai" | "ollama")
+                        }
                         className="w-4 h-4"
                       />
-                      <span className="text-sm">Ollama (локально, бесплатно)</span>
+                      <span className="text-sm">
+                        Ollama (локально, бесплатно)
+                      </span>
                     </label>
                   </div>
                 </div>
-                
+
                 {aiProvider === "ollama" && (
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Модель Ollama:</label>
+                    <label className="text-sm font-medium">
+                      Модель Ollama:
+                    </label>
                     <select
                       value={ollamaModel}
                       onChange={(e) => setOllamaModel(e.target.value)}
-                      className="px-3 py-2 border rounded-md text-sm"
+                      className="px-3 py-2 rounded-md text-sm bg-muted/50 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       <option value="llama3.2">Llama 3.2 (3B) - Быстрая</option>
-                      <option value="mistral">Mistral (7B) - Качественная</option>
-                      <option value="qwen2.5:7b">Qwen2.5 (7B) - Качественная</option>
+                      <option value="mistral">
+                        Mistral (7B) - Качественная
+                      </option>
+                      <option value="qwen2.5:7b">
+                        Qwen2.5 (7B) - Качественная
+                      </option>
                     </select>
                     <p className="text-xs text-muted-foreground">
                       Убедитесь, что Ollama запущен и модель установлена

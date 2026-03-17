@@ -86,7 +86,7 @@ export function TrainerSidebar({
         {allSpaces.length > 0 && (
           <Sidebar
             collapsible="none"
-            className="hidden flex-1 md:flex border-r bg-background"
+            className="hidden flex-1 md:flex bg-background"
           >
             <SidebarHeader>
               <div className="px-4 py-2 text-sm font-semibold">Тренировки</div>

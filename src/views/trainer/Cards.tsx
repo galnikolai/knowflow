@@ -16,10 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { useTheme } from "@/shared/context/useTheme";
-
 export const Cards: React.FC = () => {
-  const { themeColors } = useTheme();
   const router = useRouter();
   const learnspaceId = router.query.learnspace as string | undefined;
   
@@ -87,8 +84,7 @@ export const Cards: React.FC = () => {
   return (
     <TrainerSidebar>
       <div
-        className="flex flex-1 flex-col p-6 min-h-screen transition-all duration-300"
-        style={{ backgroundColor: themeColors.lightBg }}
+        className="flex flex-1 flex-col p-6 min-h-screen transition-all duration-300 bg-background"
       >
         {loading ? (
           <div className="text-lg">Загрузка карточек...</div>
@@ -123,7 +119,7 @@ export const Cards: React.FC = () => {
                   {noteCards.map((card) => (
                     <div
                       key={card.id}
-                      className="relative rounded-lg border bg-card p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      className="relative rounded-lg bg-card p-4 hover:shadow-md transition-shadow cursor-pointer shadow-sm"
                       onClick={() => setSelectedCardId(card.id)}
                     >
                       <div className="flex items-start justify-between mb-2">
