@@ -36,6 +36,7 @@
   "sidebar": {
     "collection": "Коллекция",
     "trainer": "Тренажер",
+    "graph": "Граф",
     "settings": "Настройки"
   },
   "login": {

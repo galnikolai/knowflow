@@ -1,18 +1,19 @@
 import type { AppProps } from "next/app";
 import { useEffect } from "react";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import { supabase } from "@/shared/api/supabase";
 import { useUserStore } from "@/shared/store/useUserStore";
 import { SidebarProvider } from "@/shared/ui/sidebar";
 import { ThemeProvider } from "@/shared/context/ThemeContext";
+
 // Инициализация i18n
 import "@/shared/i18n/config";
 // Импорт стилей
 import "@/styles/index.css";
 
-const geistSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
+const inter = Inter({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -45,7 +46,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   }, [setUser, setUserLoading]);
 
   return (
-    <div className={geistSans.className}>
+    <div className={inter.className}>
       <ThemeProvider>
         <SidebarProvider>
           <Component {...pageProps} />

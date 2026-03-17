@@ -30,13 +30,13 @@ export const Graph: React.FC = () => {
           <h1 className="text-2xl font-bold mb-4">Граф знаний</h1>
           <form onSubmit={handleAddNode} className="flex gap-2 mb-6">
             <input
-              className="input input-bordered"
+              className="flex h-9 w-full rounded-md bg-muted/50 px-3 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               placeholder="Название узла"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
             <input
-              className="input input-bordered"
+              className="flex h-9 w-full rounded-md bg-muted/50 px-3 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               placeholder="Описание/контент"
               value={content}
               onChange={(e) => setContent(e.target.value)}

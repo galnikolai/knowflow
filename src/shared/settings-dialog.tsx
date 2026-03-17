@@ -9,10 +9,12 @@ import {
 } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
-import { Switch } from "@/shared/ui/switch";
 import { useUserStore } from "@/shared/store/useUserStore";
+import { useTheme } from "@/shared/context/useTheme";
+import { THEME_PRESETS } from "@/shared/context/themePresets";
+import type { ThemePresetId } from "@/shared/context/themePresets";
 import { supabase } from "@/shared/api/supabase";
-import { LogOut, Moon, Sun, Globe } from "lucide-react";
+import { Palette, Globe, LogOut } from "lucide-react";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -22,27 +24,7 @@ interface SettingsDialogProps {
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { t, i18n } = useTranslation();
   const logout = useUserStore((s) => s.logout);
-  const [isDark, setIsDark] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme");
-      if (saved) {
-        return saved === "dark";
-      }
-      return document.documentElement.classList.contains("dark");
-    }
-    return false;
-  });
-
-  React.useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
+  const { themePresetId, setThemePresetId } = useTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -52,10 +34,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
-  };
-
-  const toggleDarkMode = (checked: boolean) => {
-    setIsDark(checked);
   };
 
   return (
@@ -69,19 +47,25 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Переключатель темной/светлой темы */}
-          <div className="flex items-center justify-between">
+          {/* Выбор темы оформления (как в VS Code) */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              {isDark ? (
-                <Moon className="w-4 h-4" />
-              ) : (
-                <Sun className="w-4 h-4" />
-              )}
-              <Label className="text-base font-semibold">
-                {isDark ? "Темная тема" : "Светлая тема"}
-              </Label>
+              <Palette className="w-4 h-4" />
+              <Label className="text-base font-semibold">Тема оформления</Label>
             </div>
-            <Switch checked={isDark} onCheckedChange={toggleDarkMode} />
+            <div className="flex flex-col gap-2">
+              {THEME_PRESETS.map((preset) => (
+                <Button
+                  key={preset.id}
+                  variant={themePresetId === preset.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setThemePresetId(preset.id as ThemePresetId)}
+                  className="w-full justify-start"
+                >
+                  {preset.name}
+                </Button>
+              ))}
+            </div>
           </div>
 
           {/* Выбор языка */}
@@ -111,7 +95,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </div>
 
           {/* Выход */}
-          <div className="space-y-3 pt-4 border-t">
+          <div className="space-y-3 pt-4">
             <Button
               variant="destructive"
               onClick={handleLogout}

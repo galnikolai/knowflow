@@ -1,10 +1,11 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Zap, GraduationCap } from "lucide-react";
+import { BookOpen, Zap, GraduationCap, Network } from "lucide-react";
 
 import { UserProfilePopover } from "@/entities/nav-user/UserProfilePopover";
 import { useTheme } from "@/shared/context/useTheme";
 import { SettingsDialog } from "@/shared/settings-dialog";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 
 import {
   Sidebar,
@@ -44,6 +45,13 @@ const getNavData = (t: (key: string) => string) => ({
       isActive: false,
       theme: "trainer" as const,
     },
+    {
+      title: t("sidebar.graph"),
+      url: ROUTES.GRAPH,
+      icon: Network,
+      isActive: false,
+      theme: "collection" as const,
+    },
   ],
 });
 
@@ -60,9 +68,11 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
   const activeItem = React.useMemo(() => {
     const currentPath = pathname;
     const found = data.navMain.find((item) => {
-      // Для тренажера проверяем, начинается ли путь с ROUTES.TRAINER
       if (item.url === ROUTES.TRAINER) {
         return currentPath.startsWith(ROUTES.TRAINER);
+      }
+      if (item.url === ROUTES.GRAPH) {
+        return currentPath.startsWith(ROUTES.GRAPH);
       }
       return currentPath.startsWith(item.url);
     });
@@ -72,7 +82,7 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
   return (
     <Sidebar
       collapsible="none"
-      className="w-[calc(var(--sidebar-width-icon)+1px)]! border-r"
+      className="w-[calc(var(--sidebar-width-icon)+1px)]!"
     >
       <SidebarHeader>
         <SidebarMenu>
@@ -122,8 +132,11 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
         </SidebarGroup>
         {children && <div className="flex-1 flex flex-col">{children}</div>}
       </SidebarContent>
-      <SidebarFooter>
-        <UserProfilePopover onOpenSettings={() => setSettingsOpen(true)} />
+      <SidebarFooter className="shrink-0 relative z-10">
+        <div className="flex items-center gap-1 flex-nowrap">
+          <ThemeToggle />
+          <UserProfilePopover onOpenSettings={() => setSettingsOpen(true)} />
+        </div>
       </SidebarFooter>
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </Sidebar>

@@ -9,10 +9,7 @@ import { TrainerSidebar } from "@/widgets";
 import { Button } from "@/shared/ui/button";
 import { ROUTES } from "@/shared/config/routes";
 import { BookOpen, Play, FileText, GraduationCap } from "lucide-react";
-import { useTheme } from "@/shared/context/useTheme";
-
 export const Challenges: React.FC = () => {
-  const { themeColors } = useTheme();
   const router = useRouter();
 
   const learnspaces = useLearnspacesStore((s) => s.learnspaces);
@@ -60,8 +57,7 @@ export const Challenges: React.FC = () => {
   return (
     <TrainerSidebar>
       <div
-        className="flex flex-1 flex-col p-6 min-h-screen transition-all duration-300"
-        style={{ backgroundColor: themeColors.lightBg }}
+        className="flex flex-1 flex-col p-6 min-h-screen transition-all duration-300 bg-background"
       >
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Тренировки</h1>
@@ -83,18 +79,18 @@ export const Challenges: React.FC = () => {
             {learnspacesWithStats.map((ls) => (
               <div
                 key={ls.id}
-                className="rounded-xl border bg-card shadow-sm p-6 hover:shadow-md transition-shadow space-y-4"
+                className="rounded-xl bg-card shadow-sm p-6 hover:shadow-md transition-shadow space-y-4 min-w-0 overflow-hidden"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h2 className="text-xl font-semibold mb-2 line-clamp-2">
+                <div className="flex items-start justify-between gap-2 min-w-0">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-xl font-semibold mb-2 line-clamp-2 break-words">
                       {ls.name}
                     </h2>
-                    <div className="space-y-1 text-sm text-muted-foreground">
+                    <div className="space-y-1 text-sm text-muted-foreground min-w-0">
                       {ls.noteNames.slice(0, 2).map((name, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <FileText className="w-3 h-3" />
-                          <span className="truncate">{name}</span>
+                        <div key={idx} className="flex items-center gap-2 min-w-0">
+                          <FileText className="w-3 h-3 shrink-0" />
+                          <span className="truncate min-w-0">{name}</span>
                         </div>
                       ))}
                       {ls.noteNames.length > 2 && (
@@ -107,7 +103,7 @@ export const Challenges: React.FC = () => {
                   <GraduationCap className="w-6 h-6 text-primary shrink-0 ml-2" />
                 </div>
 
-                <div className="flex items-center gap-4 pt-4 border-t">
+                <div className="flex items-center gap-4 pt-4">
                   <div className="flex-1">
                     <div className="text-2xl font-bold">{ls.totalCards}</div>
                     <div className="text-xs text-muted-foreground">

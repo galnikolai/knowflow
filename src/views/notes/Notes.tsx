@@ -139,7 +139,7 @@ export const Notes: React.FC = () => {
       onFocusFolder={handleFocusFolder}
     >
       {/* Табы */}
-      <div className="flex gap-1 mb-2 border-b pb-1 overflow-x-auto">
+      <div className="flex gap-1 mb-2 pb-2 overflow-x-auto">
         {openTabs.map((tab) => (
           <div
             key={tab.id}

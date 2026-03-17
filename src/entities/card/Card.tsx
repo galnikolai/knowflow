@@ -55,7 +55,7 @@ export const Card: React.FC<CardProps> = ({
         >
           {/* Лицевая сторона (вопрос) */}
           <div
-            className="absolute inset-0 w-full h-full backface-hidden rounded-xl border-2 border-border bg-card shadow-lg flex flex-col items-center justify-center p-8 cursor-pointer hover:shadow-xl transition-shadow"
+            className="absolute inset-0 w-full h-full backface-hidden rounded-xl bg-card shadow-lg flex flex-col items-center justify-center p-8 cursor-pointer hover:shadow-xl transition-shadow"
             onClick={handleFlip}
           >
             <div className="text-sm text-muted-foreground mb-4 uppercase tracking-wide">
@@ -82,7 +82,7 @@ export const Card: React.FC<CardProps> = ({
 
           {/* Обратная сторона (ответ) */}
           <div
-            className="absolute inset-0 w-full h-full backface-hidden rounded-xl border-2 border-border bg-card shadow-lg flex flex-col items-center justify-center p-8 bg-gradient-to-br from-primary/5 to-primary/10"
+            className="absolute inset-0 w-full h-full backface-hidden rounded-xl bg-card shadow-lg flex flex-col items-center justify-center p-8 bg-gradient-to-br from-primary/5 to-primary/10"
             style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
           >
             <div className="text-sm text-muted-foreground mb-4 uppercase tracking-wide">

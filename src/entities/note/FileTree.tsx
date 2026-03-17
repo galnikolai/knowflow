@@ -180,7 +180,7 @@ export const FileTree: React.FC<{
             {node.is_folder ? "📁" : "📝"}
             {renamingId === node.id ? (
               <input
-                className="input input-bordered input-xs ml-1"
+                className="h-7 w-full rounded-md bg-muted/50 px-2 text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ml-1"
                 value={renameValue}
                 autoFocus
                 onChange={(e) => setRenameValue(e.target.value)}
@@ -229,7 +229,7 @@ export const FileTree: React.FC<{
         </ContextMenuItem>
       </ContextMenuContent>
       {node.children && node.children.length > 0 && (
-        <div className="pl-4 border-l border-muted-foreground/20 ml-1">
+        <div className="pl-4 ml-1">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -321,7 +321,7 @@ export const FileTree: React.FC<{
       />
       <div className="mb-2 font-semibold">{t("notes.fileStructure")}</div>
       <input
-        className="input input-bordered input-sm mb-2 w-full"
+        className="h-8 w-full rounded-md bg-muted/50 px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mb-2"
         placeholder={t("notes.search")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
@@ -334,13 +334,13 @@ export const FileTree: React.FC<{
       )}
       <form onSubmit={handleAdd} className="flex gap-2 mb-2">
         <input
-          className="input input-bordered input-sm"
+          className="h-8 flex-1 rounded-md bg-muted/50 px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           placeholder={parentId ? t("notes.name") : t("notes.rootName")}
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
         />
         <select
-          className="input input-bordered input-sm"
+          className="h-8 flex-1 rounded-md bg-muted/50 px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           value={newType}
           onChange={(e) => setNewType(e.target.value as "file" | "folder")}
         >

@@ -76,7 +76,7 @@ export const NoteEditor: FC<NoteEditorProps> = ({ value, onChange }) => {
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[200px] p-4 bg-white",
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl dark:prose-invert mx-auto focus:outline-none min-h-[200px] p-4 bg-background",
       },
     },
   });
@@ -155,7 +155,7 @@ export const NoteEditor: FC<NoteEditorProps> = ({ value, onChange }) => {
       {editor && showMenu && (
         <div
           ref={menuRef}
-          className="fixed z-50 flex gap-0.5 border border-border rounded-lg shadow-lg p-0.5"
+          className="fixed z-50 flex gap-0.5 rounded-lg shadow-lg p-0.5"
           style={{
             top: `${menuPosition.top}px`,
             left: `${menuPosition.left}px`,

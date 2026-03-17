@@ -16,10 +16,16 @@ export const UserProfilePopover: React.FC<UserProfilePopoverProps> = ({
 
   return (
     <Button
+      type="button"
       variant="ghost"
       size="icon"
       aria-label="Настройки"
-      onClick={onOpenSettings}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onOpenSettings?.();
+      }}
+      className="shrink-0"
     >
       <Settings className="size-5" />
     </Button>

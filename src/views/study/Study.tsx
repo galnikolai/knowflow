@@ -2,10 +2,8 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Card } from "@/entities/card/Card";
 import { useFlashcardsStore } from "@/shared/store/useFlashcardsStore";
 import { StudySidebar } from "@/widgets";
-import { useTheme } from "@/shared/context/useTheme";
 
 export const Study: React.FC = () => {
-  const { themeColors } = useTheme();
   const cards = useFlashcardsStore((s) => s.cards);
   const fetchCards = useFlashcardsStore((s) => s.fetchCards);
   const reviewCard = useFlashcardsStore((s) => s.reviewCard);
@@ -36,9 +34,8 @@ export const Study: React.FC = () => {
 
   return (
     <StudySidebar selectedId={selectedCardId} onSelectCard={setSelectedCardId}>
-      <div 
-        className="flex flex-1 flex-col items-center justify-center p-10 min-h-screen transition-all duration-300"
-        style={{ backgroundColor: themeColors.lightBg }}
+      <div
+        className="flex flex-1 flex-col items-center justify-center p-10 min-h-screen transition-all duration-300 bg-background"
       >
         {loading ? (
           <div className="text-lg">Загрузка карточек...</div>

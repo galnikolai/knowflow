@@ -8,10 +8,7 @@ import { useLearnspacesStore } from "@/shared/store/useLearnspacesStore";
 import { TrainerSidebar } from "@/widgets";
 import { Button } from "@/shared/ui/button";
 import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
-import { useTheme } from "@/shared/context/useTheme";
-
 export const Study: React.FC = () => {
-  const { themeColors } = useTheme();
   const router = useRouter();
   const learnspaceId = router.query.learnspace as string | undefined;
   
@@ -90,8 +87,7 @@ export const Study: React.FC = () => {
   return (
     <TrainerSidebar>
       <div
-        className="flex flex-1 flex-col items-center justify-center p-10 min-h-screen transition-all duration-300"
-        style={{ backgroundColor: themeColors.lightBg }}
+        className="flex flex-1 flex-col items-center justify-center p-10 min-h-screen transition-all duration-300 bg-background"
       >
         {loading ? (
           <div className="text-lg">Загрузка карточек...</div>
