@@ -2,6 +2,7 @@ import type { AppProps } from "next/app";
 import { useEffect } from "react";
 import { Inter } from "next/font/google";
 import { supabase } from "@/shared/api/supabase";
+import { resetClientStores } from "@/shared/store/resetClientStores";
 import { useUserStore } from "@/shared/store/useUserStore";
 import { SidebarProvider } from "@/shared/ui/sidebar";
 import { ThemeProvider } from "@/shared/context/ThemeContext";
@@ -27,6 +28,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       if (data.user) {
         setUser({ id: data.user.id, email: data.user.email! });
       } else {
+        resetClientStores();
         setUser(null);
       }
       setUserLoading(false);
@@ -36,6 +38,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         if (session?.user) {
           setUser({ id: session.user.id, email: session.user.email! });
         } else {
+          resetClientStores();
           setUser(null);
         }
       }

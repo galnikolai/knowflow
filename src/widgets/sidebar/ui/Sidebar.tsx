@@ -22,7 +22,7 @@ import {
 
 import { ROUTES } from "@/shared/config/routes";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
 
 const getNavData = (t: (key: string) => string) => ({
   user: {
@@ -59,7 +59,8 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
   const { t } = useTranslation();
   const { setOpen } = useSidebar();
   const { setTheme } = useTheme();
-  const pathname = usePathname();
+  const router = useRouter();
+  const pathname = router.asPath.split("?")[0] || router.pathname;
   const [settingsOpen, setSettingsOpen] = React.useState(false);
 
   const data = getNavData(t);
