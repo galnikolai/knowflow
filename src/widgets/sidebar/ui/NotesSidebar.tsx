@@ -237,7 +237,7 @@ export function NotesSidebar({
           }
 
           const newLearnspace = await addLearnspace(learnspaceName, noteIds);
-          await fetchLearnspaces(); // Обновляем список learnspaces
+          await fetchLearnspaces({ force: true });
 
           // Переходим в тренажер с параметром learnspace
           router.push(

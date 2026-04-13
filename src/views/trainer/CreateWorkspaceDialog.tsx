@@ -45,7 +45,7 @@ export const CreateWorkspaceDialog: React.FC<CreateWorkspaceDialogProps> = ({
   // Загружаем заметки при открытии диалога
   React.useEffect(() => {
     if (open) {
-      fetchNotes();
+      void fetchNotes({ force: true });
     }
   }, [open, fetchNotes]);
 

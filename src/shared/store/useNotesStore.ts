@@ -2,11 +2,15 @@ import { create } from "zustand";
 import * as api from "@/shared/api/notes";
 import { useUserStore } from "@/shared/store/useUserStore";
 
+export type FetchNotesOpts = { force?: boolean };
+
 interface NotesStore {
   notes: api.Note[];
   loading: boolean;
   error: string | null;
-  fetchNotes: () => Promise<void>;
+  /** После успешной загрузки для user id — повторные fetch без force пропускаются. */
+  hydratedUserId: string | null;
+  fetchNotes: (opts?: FetchNotesOpts) => Promise<void>;
   addNote: (
     note: Omit<api.Note, "id" | "created_at" | "updated_at" | "user_id">
   ) => Promise<api.Note>;
@@ -23,15 +27,29 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   notes: [],
   loading: false,
   error: null,
-  fetchNotes: async () => {
+  hydratedUserId: null,
+  fetchNotes: async (opts) => {
+    const user = useUserStore.getState().user;
+    if (!user) {
+      set({
+        notes: [],
+        loading: false,
+        error: null,
+        hydratedUserId: null,
+      });
+      return;
+    }
+    if (!opts?.force && get().hydratedUserId === user.id) return;
+
     set({ loading: true, error: null });
     try {
-      const user = useUserStore.getState().user;
-      if (!user) throw new Error("Нет пользователя");
       const notes = await api.getNotes(user.id);
-      set({ notes });
+      set({ notes, hydratedUserId: user.id });
     } catch (e: unknown) {
-      set({ error: e instanceof Error ? e.message : String(e) });
+      set({
+        error: e instanceof Error ? e.message : String(e),
+        hydratedUserId: null,
+      });
     } finally {
       set({ loading: false });
     }
@@ -42,7 +60,7 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
       const user = useUserStore.getState().user;
       if (!user) throw new Error("Нет пользователя");
       const newNote = await api.addNote({ ...note, user_id: user.id });
-      await get().fetchNotes();
+      await get().fetchNotes({ force: true });
       return newNote;
     } catch (e: unknown) {
       set({ error: e instanceof Error ? e.message : String(e) });
@@ -55,7 +73,7 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await api.updateNote(id, update);
-      await get().fetchNotes();
+      await get().fetchNotes({ force: true });
     } catch (e: unknown) {
       set({ error: e instanceof Error ? e.message : String(e) });
     } finally {
@@ -66,7 +84,7 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await api.removeNote(id);
-      await get().fetchNotes();
+      await get().fetchNotes({ force: true });
     } catch (e: unknown) {
       set({ error: e instanceof Error ? e.message : String(e) });
     } finally {

@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "KnowFlow",
+    "slug": "knowflow-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "knowflow",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.knowflow.app"
+    },
+    "android": {
+      "package": "com.knowflow.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

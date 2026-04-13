@@ -2,6 +2,8 @@
   "name": "knowflow",
   "private": true,
   "version": "0.0.0",
+  "description": "KnowFlow — заметки, тренировки и граф знаний",
+  "author": "KnowFlow",
   "type": "module",
   "scripts": {
     "dev": "next dev --turbo",
@@ -11,11 +13,15 @@
     "lint": "eslint .",
     "electron": "electron .",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron:build": "npm run build && electron-builder",
-    "electron:dist": "npm run build && electron-builder --publish=never",
+    "electron:prepare": "node scripts/electron-prepare-standalone.cjs",
+    "electron:build": "npm run build && npm run electron:prepare && electron-builder",
+    "electron:dist": "npm run build && npm run electron:prepare && electron-builder --publish=never",
+    "electron:dist:signed": "npm run build && npm run electron:prepare && CSC_NAME='Apple Development: galitskynikolai@yandex.ru (SG27MJ9RV2)' electron-builder --publish=never",
+    "electron:dist:unsigned": "npm run build && npm run electron:prepare && env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --publish=never",
+    "electron:dist:github": "npm run build && npm run electron:prepare && ELECTRON_MIRROR=https://github.com/electron/electron/releases/download/ electron-builder --publish=never",
     "postinstall": "node -e \"const v=process.version.slice(1).split('.'); if(parseInt(v[0])<20||(parseInt(v[0])===20&&parseInt(v[1])<9)){console.error('⚠️  Next.js requires Node.js >=20.9.0. Current:', process.version); process.exit(1)}\" || true"
   },
-  "main": "electron/main.js",
+  "main": "electron/main.cjs",
   "homepage": "./",
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -92,15 +98,22 @@
   "build": {
     "appId": "com.knowflow.app",
     "productName": "KnowFlow",
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/"
+    },
     "directories": {
       "output": "dist-electron"
     },
     "files": [
-      ".next/**/*",
-      "public/**/*",
       "electron/**/*",
-      "node_modules/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": ".next/standalone",
+        "to": "standalone",
+        "filter": ["**/*"]
+      }
     ],
     "mac": {
       "category": "public.app-category.productivity",

@@ -3,11 +3,14 @@ import type { Flashcard } from "@/entities/card/Card";
 import * as api from "@/shared/api/flashcards";
 import { useUserStore } from "@/shared/store/useUserStore";
 
+export type FetchCardsOpts = { force?: boolean };
+
 interface FlashcardsStore {
   cards: Flashcard[];
   loading: boolean;
   error: string | null;
-  fetchCards: () => Promise<void>;
+  hydratedUserId: string | null;
+  fetchCards: (opts?: FetchCardsOpts) => Promise<void>;
   addCard: (card: Omit<Flashcard, "id">) => Promise<void>;
   updateCard: (id: string, update: Partial<Flashcard>) => Promise<void>;
   removeCard: (id: string) => Promise<void>;
@@ -43,15 +46,29 @@ export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
   cards: [],
   loading: false,
   error: null,
-  fetchCards: async () => {
+  hydratedUserId: null,
+  fetchCards: async (opts) => {
+    const user = useUserStore.getState().user;
+    if (!user) {
+      set({
+        cards: [],
+        loading: false,
+        error: null,
+        hydratedUserId: null,
+      });
+      return;
+    }
+    if (!opts?.force && get().hydratedUserId === user.id) return;
+
     set({ loading: true, error: null });
     try {
-      const user = useUserStore.getState().user;
-      if (!user) throw new Error("Нет пользователя");
       const cards = await api.getFlashcards(user.id);
-      set({ cards });
+      set({ cards, hydratedUserId: user.id });
     } catch (e: unknown) {
-      set({ error: e instanceof Error ? e.message : String(e) });
+      set({
+        error: e instanceof Error ? e.message : String(e),
+        hydratedUserId: null,
+      });
     } finally {
       set({ loading: false });
     }
@@ -62,7 +79,7 @@ export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
       const user = useUserStore.getState().user;
       if (!user) throw new Error("Нет пользователя");
       await api.addFlashcard(user.id, card);
-      await get().fetchCards();
+      await get().fetchCards({ force: true });
     } catch (e: unknown) {
       set({ error: e instanceof Error ? e.message : String(e) });
     } finally {
@@ -73,7 +90,7 @@ export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await api.updateFlashcard(id, update);
-      await get().fetchCards();
+      await get().fetchCards({ force: true });
     } catch (e: unknown) {
       set({ error: e instanceof Error ? e.message : String(e) });
     } finally {
@@ -84,7 +101,7 @@ export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await api.removeFlashcard(id);
-      await get().fetchCards();
+      await get().fetchCards({ force: true });
     } catch (e: unknown) {
       set({ error: e instanceof Error ? e.message : String(e) });
     } finally {
@@ -98,7 +115,7 @@ export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
       if (!card) throw new Error("Карточка не найдена");
       const updated = getNextSM2(card, grade);
       await api.updateFlashcard(id, updated);
-      await get().fetchCards();
+      await get().fetchCards({ force: true });
     } catch (e: unknown) {
       set({ error: e instanceof Error ? e.message : String(e) });
     } finally {

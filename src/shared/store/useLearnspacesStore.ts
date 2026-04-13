@@ -14,11 +14,14 @@ export type Learnspace = {
   created_at: string;
 };
 
+export type FetchLearnspacesOpts = { force?: boolean };
+
 interface LearnspacesStore {
   learnspaces: Learnspace[];
   loading: boolean;
   error: string | null;
-  fetchLearnspaces: () => Promise<void>;
+  hydratedUserId: string | null;
+  fetchLearnspaces: (opts?: FetchLearnspacesOpts) => Promise<void>;
   addLearnspace: (name: string, noteIds: string[]) => Promise<Learnspace>;
   removeLearnspace: (id: string) => Promise<void>;
   updateLearnspace: (id: string, update: Partial<Learnspace>) => Promise<void>;
@@ -28,23 +31,36 @@ export const useLearnspacesStore = create<LearnspacesStore>((set, get) => ({
   learnspaces: [],
   loading: false,
   error: null,
+  hydratedUserId: null,
 
-  fetchLearnspaces: async () => {
+  fetchLearnspaces: async (opts) => {
     const user = useUserStore.getState().user;
     if (!user) {
-      set({ learnspaces: [], loading: false, error: null });
+      set({
+        learnspaces: [],
+        loading: false,
+        error: null,
+        hydratedUserId: null,
+      });
       return;
     }
+    if (!opts?.force && get().hydratedUserId === user.id) return;
 
     set({ loading: true, error: null });
     try {
       const data = await getLearnspaces(user.id);
-      set({ learnspaces: data, loading: false, error: null });
+      set({
+        learnspaces: data,
+        loading: false,
+        error: null,
+        hydratedUserId: user.id,
+      });
     } catch (error) {
       set({
         learnspaces: [],
         loading: false,
         error: error instanceof Error ? error.message : "Ошибка загрузки learnspaces",
+        hydratedUserId: null,
       });
     }
   },

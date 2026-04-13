@@ -40,8 +40,8 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Для Docker деплоя (опционально)
-  // output: 'standalone',
+  // Автономный сервер для Electron (.dmg без внешнего Node)
+  output: "standalone",
 };
 
 export default nextConfig;

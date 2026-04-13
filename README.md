@@ -45,7 +45,7 @@ src/
 ├── lib/                   # Утилиты
 ├── hooks/                 # Локальные хуки
 electron/                   # Electron конфигурация
-├── main.js               # Главный процесс Electron
+├── main.cjs              # Главный процесс Electron (CommonJS: при type:module .js был бы ESM)
 scripts/                    # Скрипты для разработки
 └── dev-electron.sh        # Скрипт запуска Electron
 ```
@@ -250,28 +250,54 @@ npm run lint
 
 ### Десктоп-версия (Electron)
 
+**Разработка** (окно Electron + Next на `localhost:3000`):
+
 ```bash
-# Установка зависимостей
 npm install
-
-# Запуск Electron в режиме разработки
 npm run electron:dev
+```
 
-# Или используйте готовый скрипт
-./scripts/dev-electron.sh
+**Установка на Mac без отдельного `npm start`** (внутри приложения поднимается Next.js `standalone` на `127.0.0.1:30443`):
 
-# Сборка Electron приложения
-npm run electron:build
-
-# Создание дистрибутива
+```bash
+npm install
 npm run electron:dist
 ```
 
-**Доступные команды Electron:**
-- `npm run electron` - запуск Electron с собранным приложением
-- `npm run electron:dev` - запуск в режиме разработки (Next.js + Electron)
-- `npm run electron:build` - сборка для продакшена
-- `npm run electron:dist` - создание установочных файлов
+В каталоге `dist-electron/` появится **DMG** (например `KnowFlow-*.dmg`). Откройте его и перетащите KnowFlow в **Программы**. Запуск не требует терминала и внешнего localhost.
+
+Перед сборкой нужен успешный `next build` с `output: "standalone"` (уже в `next.config.ts`). Скрипт `npm run electron:prepare` копирует `public` и `.next/static` в standalone для корректной работы статики.
+
+**Переменная порта** (редко нужно): `KNOWFLOW_PORT=30444 npm run electron:dist` — порт вшит в собранное приложение через окружение на этапе **запуска**; по умолчанию используется `30443`.
+
+**Если при запуске приложения пишет, что сервер не поднялся:** чаще всего порт **30443** уже занят (вторая копия KnowFlow, старый процесс) — закройте лишние экземпляры или задайте другой порт: `KNOWFLOW_PORT=30444 open -a KnowFlow` (путь к `.app` подставьте свой). Перед пересборкой DMG выполните `npm run build && npm run electron:prepare`. Диагностика встроенного Next: из терминала  
+`KNOWFLOW_DEBUG=1 /Applications/KnowFlow.app/Contents/MacOS/KnowFlow`  
+(в лог пойдёт stdout/stderr процесса `server.js`).
+
+**Если сборка падает с таймаутом при скачивании Electron** (`github.com/electron/...: connect: operation timed out`):
+
+- В `package.json` для `electron-builder` задано зеркало **`https://npmmirror.com/mirrors/electron/`** — повторите `npm run electron:dist`.
+- Если нужен именно GitHub (VPN, другая сеть):  
+  `npm run electron:dist:github`
+- Вручную:  
+  `ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm run electron:dist`  
+  или любое другое зеркало в формате `@electron/get` / `electron-builder`.
+- Заранее подтянуть бинарник в кэш: `npx electron --version` (иногда помогает, если доступен реестр npm).
+
+**Подпись на macOS:** в `package.json` **не** задан жёсткий `mac.identity` — иначе `electron-builder` подписывает даже при `CSC_IDENTITY_AUTO_DISCOVERY=false`, и скрипт «без подписи» не срабатывает.
+
+- **`npm run electron:dist`** — подпись **автовыбором** (первый подходящий сертификат на машине).
+- **`npm run electron:dist:signed`** — подпись сертификатом **Apple Development: galitskynikolai@yandex.ru (SG27MJ9RV2)** (смените в `package.json` в скрипте `electron:dist:signed`, если сертификат другой).
+- **`npm run electron:dist:unsigned`** — **без подписи** (`CSC_IDENTITY_AUTO_DISCOVERY=false` + `env`, без `mac.identity`). DMG соберётся; при первом запуске — **ПКМ → Открыть** в Gatekeeper.
+
+Если окно связки ключей **не принимает пароль** при подписи — это пароль связки «login» / доступ к ключу; для локальной сборки используйте **`electron:dist:unsigned`**.
+
+Вручную: `CSC_NAME="Apple Development: …" npm run electron:dist` (после `build` и `electron:prepare`).
+
+**Доступные команды:**
+- `npm run electron:dev` — разработка (Next dev + Electron)
+- `npm run electron:dist` — DMG для macOS (`electron-builder`, публикация отключена)
+- `npm run electron:build` — то же, что `electron:dist` в этом проекте
 
 ## Переменные окружения
 
