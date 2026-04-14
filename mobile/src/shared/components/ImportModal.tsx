@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -21,144 +21,301 @@ import {
   importAudioOrVideo,
   type ImportResult,
 } from "@/shared/api/import";
-import { colors, spacing, radius, font, shadow } from "@/shared/theme";
+import { useTheme } from "@/shared/context/ThemeContext";
+import { spacing, radius, font, type ThemeColors } from "@/shared/theme";
 
 type ImportType = "url" | "markdown" | "pdf" | "audio" | null;
+
+type ImportStyles = ReturnType<typeof createImportStyles>;
 
 interface ImportOption {
   id: ImportType;
   icon: React.ComponentProps<typeof Ionicons>["name"];
   label: string;
-  sublabel: string;
-  color: string;
-  bg: string;
+  hint: string;
   needsApi?: boolean;
 }
 
 const IMPORT_OPTIONS: ImportOption[] = [
   {
     id: "url",
-    icon: "globe-outline",
-    label: "Веб-статья",
-    sublabel: "Вставьте URL любой страницы",
-    color: colors.primary,
-    bg: colors.primaryDim,
+    icon: "link-outline",
+    label: "Страница по ссылке",
+    hint: "URL публичной статьи",
   },
   {
     id: "markdown",
     icon: "document-text-outline",
-    label: "Markdown / Текст",
-    sublabel: ".md, .txt файлы",
-    color: "#a78bfa",
-    bg: "#2d1f4e",
+    label: "Файл",
+    hint: "Markdown или текст",
   },
   {
     id: "pdf",
     icon: "document-outline",
     label: "PDF",
-    sublabel: "Требуется API сервер",
-    color: "#f97316",
-    bg: "#2a1508",
+    hint: "Нужен API на сервере",
     needsApi: true,
   },
   {
     id: "audio",
     icon: "mic-outline",
-    label: "Аудио / Видео",
-    sublabel: "mp3, mp4, wav и др. · Требуется API",
-    color: "#ec4899",
-    bg: "#2d0f1f",
+    label: "Аудио или видео",
+    hint: "Нужен API на сервере",
     needsApi: true,
   },
 ];
 
-// ─── Preview panel ─────────────────────────────────────────────────────────────
+function createImportStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    modal: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    sheet: {
+      flex: 1,
+    },
+    topRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.sm,
+    },
+    iconHit: {
+      minWidth: 44,
+      minHeight: 44,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    topTitle: {
+      color: colors.text,
+      fontSize: font.md,
+      fontWeight: "600",
+    },
+    actionText: {
+      color: colors.primary,
+      fontSize: font.base,
+      fontWeight: "600",
+    },
+    actionTextDisabled: {
+      color: colors.textTertiary,
+    },
+    lead: {
+      color: colors.textTertiary,
+      fontSize: font.sm,
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.sm,
+    },
+    list: {
+      marginHorizontal: spacing.lg,
+      borderRadius: radius.md,
+      backgroundColor: colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.borderSubtle,
+      overflow: "hidden",
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+    },
+    rowBorder: {
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.borderSubtle,
+    },
+    rowText: {
+      flex: 1,
+    },
+    rowLabel: {
+      color: colors.text,
+      fontSize: font.base,
+      fontWeight: "500",
+    },
+    rowHint: {
+      color: colors.textTertiary,
+      fontSize: font.xs,
+      marginTop: 2,
+    },
+    footnote: {
+      color: colors.textTertiary,
+      fontSize: font.xs,
+      textAlign: "center",
+      marginTop: spacing.lg,
+      paddingHorizontal: spacing.lg,
+      lineHeight: 16,
+    },
+    urlBody: {
+      flex: 1,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.lg,
+    },
+    urlInput: {
+      backgroundColor: colors.surface,
+      borderRadius: radius.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.border,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 14,
+      color: colors.text,
+      fontSize: font.base,
+    },
+    helper: {
+      color: colors.textTertiary,
+      fontSize: font.sm,
+      marginTop: spacing.sm,
+      lineHeight: 20,
+    },
+    primaryBtn: {
+      marginTop: spacing.lg,
+      backgroundColor: colors.text,
+      borderRadius: radius.md,
+      paddingVertical: 16,
+      alignItems: "center",
+    },
+    primaryBtnOff: {
+      opacity: 0.45,
+    },
+    primaryBtnLabel: {
+      color: colors.textInverse,
+      fontSize: font.base,
+      fontWeight: "600",
+    },
+    previewBody: {
+      flex: 1,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+    },
+    inputLabel: {
+      color: colors.textSecondary,
+      fontSize: font.sm,
+      marginBottom: spacing.xs,
+    },
+    titleInput: {
+      backgroundColor: colors.surface,
+      borderRadius: radius.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.border,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 12,
+      color: colors.text,
+      fontSize: font.md,
+      fontWeight: "500",
+    },
+    metaLine: {
+      color: colors.textTertiary,
+      fontSize: font.xs,
+      marginTop: spacing.sm,
+    },
+    previewScroll: {
+      flex: 1,
+      marginTop: spacing.md,
+      backgroundColor: colors.surface,
+      borderRadius: radius.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.borderSubtle,
+    },
+    previewScrollInner: {
+      padding: spacing.md,
+      paddingBottom: spacing.xl,
+    },
+    contentText: {
+      color: colors.textSecondary,
+      fontSize: font.sm,
+      lineHeight: 22,
+    },
+    contentTruncated: {
+      color: colors.textTertiary,
+      fontStyle: "italic",
+    },
+  });
+}
 
 function PreviewPanel({
   result,
   onSave,
   onBack,
   saving,
+  styles,
+  colors,
 }: {
   result: ImportResult;
   onSave: (title: string, content: string) => Promise<void>;
   onBack: () => void;
   saving: boolean;
+  styles: ImportStyles;
+  colors: ThemeColors;
 }) {
   const [title, setTitle] = useState(result.title);
   const wordCount = result.content.split(/\s+/).filter(Boolean).length;
+  const rest = result.content.length > 3000 ? result.content.length - 3000 : 0;
 
   return (
-    <View style={styles.previewContainer}>
-      <View style={styles.previewHeader}>
-        <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={20} color={colors.textSecondary} />
+    <View style={styles.sheet}>
+      <View style={styles.topRow}>
+        <TouchableOpacity onPress={onBack} style={styles.iconHit} accessibilityRole="button">
+          <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
         </TouchableOpacity>
-        <Text style={styles.previewHeaderTitle}>Предпросмотр</Text>
+        <Text style={styles.topTitle}>Проверка</Text>
         <TouchableOpacity
           onPress={() => onSave(title, result.content)}
           disabled={saving || !title.trim()}
-          activeOpacity={0.8}
+          style={styles.iconHit}
+          accessibilityRole="button"
         >
           {saving ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={[styles.saveText, !title.trim() && { color: colors.textTertiary }]}>
+            <Text style={[styles.actionText, !title.trim() && styles.actionTextDisabled]}>
               Сохранить
             </Text>
           )}
         </TouchableOpacity>
       </View>
 
-      <View style={styles.titleField}>
-        <Text style={styles.fieldLabel}>Название заметки</Text>
+      <View style={styles.previewBody}>
+        <Text style={styles.inputLabel}>Название</Text>
         <TextInput
           style={styles.titleInput}
           value={title}
           onChangeText={setTitle}
-          placeholder="Название..."
+          placeholder="Заголовок заметки"
           placeholderTextColor={colors.textTertiary}
           autoFocus
         />
-      </View>
 
-      <View style={styles.metaRow}>
-        <View style={styles.metaBadge}>
-          <Ionicons name="text-outline" size={11} color={colors.textTertiary} />
-          <Text style={styles.metaText}>{wordCount} слов</Text>
-        </View>
-        <View style={styles.metaBadge}>
-          <Ionicons name="document-outline" size={11} color={colors.textTertiary} />
-          <Text style={styles.metaText}>{result.content.length} символов</Text>
-        </View>
-      </View>
-
-      <ScrollView
-        style={styles.contentPreview}
-        contentContainerStyle={{ padding: spacing.md }}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.contentText} selectable>
-          {result.content.slice(0, 3000)}
-          {result.content.length > 3000 && (
-            <Text style={styles.contentTruncated}>
-              {"\n\n… ещё {result.content.length - 3000} символов"}
-            </Text>
-          )}
+        <Text style={styles.metaLine}>
+          {wordCount} слов{rest > 0 ? ` · +${rest} симв.` : ""}
         </Text>
-      </ScrollView>
+
+        <ScrollView
+          style={styles.previewScroll}
+          contentContainerStyle={styles.previewScrollInner}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.contentText} selectable>
+            {result.content.slice(0, 3000)}
+            {rest > 0 ? (
+              <Text style={styles.contentTruncated}>{`\n\n… обрезано для просмотра`}</Text>
+            ) : null}
+          </Text>
+        </ScrollView>
+      </View>
     </View>
   );
 }
 
-// ─── URL input ────────────────────────────────────────────────────────────────
-
 function UrlInput({
   onResult,
   onBack,
+  styles,
+  colors,
 }: {
   onResult: (r: ImportResult) => void;
   onBack: () => void;
+  styles: ImportStyles;
+  colors: ThemeColors;
 }) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -170,7 +327,7 @@ function UrlInput({
       const result = await importFromUrl(url);
       onResult(result);
     } catch (e) {
-      Alert.alert("Ошибка", e instanceof Error ? e.message : String(e));
+      Alert.alert("Не получилось", e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
@@ -179,29 +336,22 @@ function UrlInput({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.urlContainer}
+      style={styles.sheet}
     >
-      <View style={styles.previewHeader}>
-        <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={20} color={colors.textSecondary} />
+      <View style={styles.topRow}>
+        <TouchableOpacity onPress={onBack} style={styles.iconHit} accessibilityRole="button">
+          <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
         </TouchableOpacity>
-        <Text style={styles.previewHeaderTitle}>Импорт URL</Text>
-        <View style={{ width: 60 }} />
+        <Text style={styles.topTitle}>Ссылка</Text>
+        <View style={styles.iconHit} />
       </View>
 
       <View style={styles.urlBody}>
-        <View style={styles.urlIcon}>
-          <Ionicons name="globe-outline" size={32} color={colors.primary} />
-        </View>
-        <Text style={styles.urlTitle}>Введите адрес статьи</Text>
-        <Text style={styles.urlSub}>
-          Поддерживаются любые публичные страницы: Wikipedia, Medium, Habr и т.д.
-        </Text>
         <TextInput
           style={styles.urlInput}
           value={url}
           onChangeText={setUrl}
-          placeholder="https://..."
+          placeholder="https://…"
           placeholderTextColor={colors.textTertiary}
           autoCapitalize="none"
           autoCorrect={false}
@@ -210,27 +360,23 @@ function UrlInput({
           onSubmitEditing={handleFetch}
           autoFocus
         />
+        <Text style={styles.helper}>Откроем текст страницы, без оформления сайта.</Text>
         <TouchableOpacity
-          style={[styles.fetchBtn, (!url.trim() || loading) && styles.fetchBtnDisabled]}
+          style={[styles.primaryBtn, (!url.trim() || loading) && styles.primaryBtnOff]}
           onPress={handleFetch}
           disabled={!url.trim() || loading}
-          activeOpacity={0.85}
+          activeOpacity={0.9}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" size="small" />
+            <ActivityIndicator color={colors.textInverse} size="small" />
           ) : (
-            <>
-              <Ionicons name="download-outline" size={16} color="#fff" />
-              <Text style={styles.fetchBtnText}>Загрузить</Text>
-            </>
+            <Text style={styles.primaryBtnLabel}>Загрузить</Text>
           )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
 }
-
-// ─── Main modal ───────────────────────────────────────────────────────────────
 
 interface ImportModalProps {
   visible: boolean;
@@ -240,6 +386,8 @@ interface ImportModalProps {
 
 export function ImportModal({ visible, onClose, onImport }: ImportModalProps) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createImportStyles(colors), [colors]);
   const [activeType, setActiveType] = useState<ImportType>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [saving, setSaving] = useState(false);
@@ -274,7 +422,7 @@ export function ImportModal({ visible, onClose, onImport }: ImportModalProps) {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (msg !== "cancelled") {
-        Alert.alert("Ошибка импорта", msg);
+        Alert.alert("Импорт", msg);
       }
     } finally {
       setLoading(null);
@@ -305,6 +453,8 @@ export function ImportModal({ visible, onClose, onImport }: ImportModalProps) {
           onSave={handleSave}
           onBack={handleBack}
           saving={saving}
+          styles={styles}
+          colors={colors}
         />
       );
     }
@@ -317,57 +467,53 @@ export function ImportModal({ visible, onClose, onImport }: ImportModalProps) {
             setResult(r);
           }}
           onBack={handleBack}
+          styles={styles}
+          colors={colors}
         />
       );
     }
 
     return (
-      <View style={[styles.optionsContainer, { paddingBottom: insets.bottom + spacing.lg }]}>
-        {/* Header */}
-        <View style={styles.optionsHeader}>
-          <TouchableOpacity onPress={handleClose}>
-            <Ionicons name="close" size={22} color={colors.textSecondary} />
+      <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.md }]}>
+        <View style={styles.topRow}>
+          <TouchableOpacity onPress={handleClose} style={styles.iconHit} accessibilityRole="button">
+            <Ionicons name="close" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
-          <Text style={styles.optionsTitle}>Импорт</Text>
-          <View style={{ width: 22 }} />
+          <Text style={styles.topTitle}>Новая заметка</Text>
+          <View style={styles.iconHit} />
         </View>
 
-        <Text style={styles.optionsSub}>
-          Выберите источник для создания заметки
-        </Text>
+        <Text style={styles.lead}>Откуда взять текст</Text>
 
-        <View style={styles.optionsList}>
-          {IMPORT_OPTIONS.map((option) => (
+        <View style={styles.list}>
+          {IMPORT_OPTIONS.map((option, i) => (
             <TouchableOpacity
               key={option.id}
-              style={styles.optionRow}
+              style={[styles.row, i > 0 && styles.rowBorder]}
               onPress={() => handleOptionPress(option)}
-              activeOpacity={0.7}
+              activeOpacity={0.65}
               disabled={loading !== null}
+              accessibilityRole="button"
+              accessibilityLabel={option.label}
             >
-              <View style={[styles.optionIcon, { backgroundColor: option.bg }]}>
-                {loading === option.id ? (
-                  <ActivityIndicator size="small" color={option.color} />
-                ) : (
-                  <Ionicons name={option.icon} size={20} color={option.color} />
-                )}
+              <Ionicons name={option.icon} size={22} color={colors.textSecondary} />
+              <View style={styles.rowText}>
+                <Text style={styles.rowLabel}>{option.label}</Text>
+                <Text style={styles.rowHint}>
+                  {option.needsApi ? `${option.hint}` : option.hint}
+                </Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.optionLabel}>{option.label}</Text>
-                <Text style={styles.optionSub}>{option.sublabel}</Text>
-              </View>
-              {option.needsApi && (
-                <View style={styles.apiBadge}>
-                  <Text style={styles.apiBadgeText}>API</Text>
-                </View>
+              {loading === option.id ? (
+                <ActivityIndicator size="small" color={colors.textTertiary} />
+              ) : (
+                <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
               )}
-              <Ionicons name="chevron-forward" size={14} color={colors.textTertiary} />
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.apiNote}>
-          Опции с меткой API требуют настройки{"\n"}EXPO_PUBLIC_API_URL в .env
+        <Text style={styles.footnote}>
+          PDF и медиа работают, если задан EXPO_PUBLIC_API_URL
         </Text>
       </View>
     );
@@ -380,250 +526,7 @@ export function ImportModal({ visible, onClose, onImport }: ImportModalProps) {
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
     >
-      <View style={[styles.modal, { paddingTop: insets.top }]}>
-        {renderContent()}
-      </View>
+      <View style={[styles.modal, { paddingTop: insets.top }]}>{renderContent()}</View>
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  modal: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  // Options list
-  optionsContainer: {
-    flex: 1,
-  },
-  optionsHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  optionsTitle: {
-    color: colors.text,
-    fontSize: font.md,
-    fontWeight: "600",
-  },
-  optionsSub: {
-    color: colors.textTertiary,
-    fontSize: font.sm,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-  },
-  optionsList: {
-    marginHorizontal: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: "hidden",
-  },
-  optionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: spacing.md,
-    gap: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  optionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  optionLabel: {
-    color: colors.text,
-    fontSize: font.base,
-    fontWeight: "500",
-  },
-  optionSub: {
-    color: colors.textTertiary,
-    fontSize: font.xs,
-    marginTop: 2,
-  },
-  apiBadge: {
-    backgroundColor: colors.surface2,
-    borderRadius: radius.sm,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  apiBadgeText: {
-    color: colors.textTertiary,
-    fontSize: 9,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-  },
-  apiNote: {
-    color: colors.textTertiary,
-    fontSize: font.xs,
-    textAlign: "center",
-    marginTop: spacing.lg,
-    paddingHorizontal: spacing.md,
-    lineHeight: 18,
-  },
-  // URL input
-  urlContainer: {
-    flex: 1,
-  },
-  urlBody: {
-    flex: 1,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.xl,
-    alignItems: "center",
-    gap: spacing.md,
-  },
-  urlIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: radius.xl,
-    backgroundColor: colors.primaryDim,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.xs,
-  },
-  urlTitle: {
-    color: colors.text,
-    fontSize: font.xl,
-    fontWeight: "700",
-    letterSpacing: -0.3,
-    textAlign: "center",
-  },
-  urlSub: {
-    color: colors.textTertiary,
-    fontSize: font.sm,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  urlInput: {
-    width: "100%",
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 14,
-    color: colors.text,
-    fontSize: font.base,
-    marginTop: spacing.sm,
-  },
-  fetchBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: 14,
-    borderRadius: radius.full,
-    width: "100%",
-    justifyContent: "center",
-    ...shadow.glow,
-  },
-  fetchBtnDisabled: {
-    opacity: 0.5,
-  },
-  fetchBtnText: {
-    color: "#fff",
-    fontSize: font.base,
-    fontWeight: "600",
-  },
-  // Preview
-  previewContainer: {
-    flex: 1,
-  },
-  previewHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backBtn: {
-    padding: 2,
-  },
-  previewHeaderTitle: {
-    color: colors.text,
-    fontSize: font.md,
-    fontWeight: "600",
-  },
-  saveText: {
-    color: colors.primary,
-    fontSize: font.base,
-    fontWeight: "600",
-  },
-  titleField: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    gap: spacing.xs,
-  },
-  fieldLabel: {
-    color: colors.textTertiary,
-    fontSize: font.xs,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  titleInput: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    color: colors.text,
-    fontSize: font.md,
-    fontWeight: "600",
-  },
-  metaRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-  },
-  metaBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: colors.surface,
-    borderRadius: radius.full,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  metaText: {
-    color: colors.textTertiary,
-    fontSize: font.xs,
-  },
-  contentPreview: {
-    flex: 1,
-    marginTop: spacing.sm,
-    marginHorizontal: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-  },
-  contentText: {
-    color: colors.textSecondary,
-    fontSize: font.sm,
-    lineHeight: 22,
-  },
-  contentTruncated: {
-    color: colors.textTertiary,
-    fontStyle: "italic",
-  },
-});
