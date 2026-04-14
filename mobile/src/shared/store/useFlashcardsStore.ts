@@ -35,6 +35,8 @@ interface FlashcardsStore {
   hydratedUserId: string | null;
   fetchCards: (opts?: { force?: boolean }) => Promise<void>;
   reviewCard: (id: string, grade: 0 | 3 | 5) => Promise<void>;
+  addCards: (cards: Omit<Flashcard, "id">[]) => Promise<void>;
+  removeCard: (id: string) => Promise<void>;
   getDueCards: () => Flashcard[];
   getDueCardsForNotes: (noteIds: string[]) => Flashcard[];
 }
@@ -62,6 +64,18 @@ export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+
+  addCards: async (newCards) => {
+    const user = useUserStore.getState().user;
+    if (!user) throw new Error("Нет пользователя");
+    await Promise.all(newCards.map((c) => api.addFlashcard(user.id, c)));
+    await useFlashcardsStore.getState().fetchCards({ force: true });
+  },
+
+  removeCard: async (id) => {
+    await api.removeFlashcard(id);
+    set((state) => ({ cards: state.cards.filter((c) => c.id !== id) }));
   },
 
   reviewCard: async (id, grade) => {
