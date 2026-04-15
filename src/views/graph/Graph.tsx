@@ -152,14 +152,28 @@ export const Graph: React.FC = () => {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showLegend, setShowLegend] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({ w: 0, h: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<{ centerAt?: (x: number, y: number, ms: number) => void; zoom?: (k: number, ms: number) => void } | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
     setDark(isDarkMode());
-    const obs = new MutationObserver(() => setDark(isDarkMode()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => obs.disconnect();
+    const themeObs = new MutationObserver(() => setDark(isDarkMode()));
+    themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    const el = containerRef.current;
+    if (el) {
+      const ro = new ResizeObserver((entries) => {
+        const { width, height } = entries[0].contentRect;
+        setCanvasSize({ w: Math.floor(width), h: Math.floor(height) });
+      });
+      ro.observe(el);
+      // initial size
+      setCanvasSize({ w: Math.floor(el.clientWidth), h: Math.floor(el.clientHeight) });
+      return () => { themeObs.disconnect(); ro.disconnect(); };
+    }
+    return () => themeObs.disconnect();
   }, []);
 
   useEffect(() => {
@@ -311,7 +325,7 @@ export const Graph: React.FC = () => {
 
   return (
     <GraphSidebar>
-      <div className="flex flex-col h-screen overflow-hidden relative bg-background">
+      <div ref={containerRef} className="flex flex-col h-full overflow-hidden relative bg-background">
         {/* Toolbar */}
         <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
           <div className="relative">
@@ -368,9 +382,11 @@ export const Graph: React.FC = () => {
         )}
 
         {/* Graph */}
-        {isMounted && notes.length > 0 && (
+        {isMounted && notes.length > 0 && canvasSize.w > 0 && (
           <ForceGraph2D
             ref={graphRef as React.MutableRefObject<null>}
+            width={canvasSize.w}
+            height={canvasSize.h}
             graphData={{ nodes: nodes as unknown[], links: links as unknown[] }}
             backgroundColor={bgColor}
             linkColor={() => linkColor}
