@@ -8,7 +8,7 @@ import { useNotesStore } from "@/shared/store/useNotesStore";
 import { TrainerSidebar } from "@/widgets";
 import { Button } from "@/shared/ui/button";
 import { ROUTES } from "@/shared/config/routes";
-import { BookOpen, Play, FileText, GraduationCap } from "lucide-react";
+import { BookOpen, Play, FileText, GraduationCap, Brain } from "lucide-react";
 export const Challenges: React.FC = () => {
   const router = useRouter();
 
@@ -132,11 +132,23 @@ export const Challenges: React.FC = () => {
                     disabled={ls.dueCards === 0}
                   >
                     <Play className="w-4 h-4" />
-                    Изучать
+                    Карточки
                   </Button>
                   <Button
                     variant="outline"
-                    className="gap-2"
+                    className="gap-2 flex-1"
+                    onClick={() => {
+                      router.push(
+                        `${ROUTES.TRAINER_QUIZ}?learnspace=${ls.id}`
+                      );
+                    }}
+                  >
+                    <Brain className="w-4 h-4" />
+                    Квиз
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
                     onClick={() => {
                       router.push(
                         `${ROUTES.TRAINER_CARDS}?learnspace=${ls.id}`

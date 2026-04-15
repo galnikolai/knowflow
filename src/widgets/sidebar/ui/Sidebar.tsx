@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Zap, GraduationCap, Network } from "lucide-react";
+import { BookOpen, Zap, GraduationCap, Network, BarChart2 } from "lucide-react";
 
 import { UserProfilePopover } from "@/entities/nav-user/UserProfilePopover";
 import { useTheme } from "@/shared/context/useTheme";
@@ -52,6 +52,13 @@ const getNavData = (t: (key: string) => string) => ({
       isActive: false,
       theme: "collection" as const,
     },
+    {
+      title: "Аналитика",
+      url: ROUTES.ANALYTICS,
+      icon: BarChart2,
+      isActive: false,
+      theme: "collection" as const,
+    },
   ],
 });
 
@@ -73,7 +80,10 @@ export function AppSidebar({ children }: { children?: React.ReactNode }) {
         return currentPath.startsWith(ROUTES.TRAINER);
       }
       if (item.url === ROUTES.GRAPH) {
-        return currentPath.startsWith(ROUTES.GRAPH);
+        return currentPath === ROUTES.GRAPH;
+      }
+      if (item.url === ROUTES.ANALYTICS) {
+        return currentPath.startsWith(ROUTES.ANALYTICS);
       }
       return currentPath.startsWith(item.url);
     });
