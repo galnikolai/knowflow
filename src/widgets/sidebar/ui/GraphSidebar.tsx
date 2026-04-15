@@ -82,6 +82,7 @@ export function GraphSidebar({
       style={
         {
           "--sidebar-width": "350px",
+          height: "100svh",
         } as React.CSSProperties
       }
     >
@@ -124,7 +125,7 @@ export function GraphSidebar({
           </SidebarContent>
         </Sidebar>
       </Sidebar>
-      <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+      <div className="flex flex-1 flex-col overflow-hidden">{children}</div>
     </SidebarProvider>
   );
 }
