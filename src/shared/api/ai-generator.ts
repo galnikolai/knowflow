@@ -411,16 +411,34 @@ export function createAIProvider(
 }
 
 // Основная функция для генерации флеш-карточек (клиентская)
-// Использует API route для безопасности
 export async function generateFlashcards(
-  options: GenerateFlashcardsOptions
+  options: GenerateFlashcardsOptions & { apiKey?: string }
 ): Promise<FlashcardData[]> {
+  // Подтягиваем настройки из localStorage если ключ/провайдер не передан явно
+  let payload: typeof options = { ...options };
+  if (typeof window !== "undefined" && !options.apiKey && !options.provider) {
+    try {
+      const stored = localStorage.getItem("knowflow-settings");
+      if (stored) {
+        const { state } = JSON.parse(stored) as { state: { ai: { provider: string; openaiKey: string; anthropicKey: string; openaiModel: string; anthropicModel: string; ollamaModel: string } } };
+        const ai = state.ai;
+        payload.provider = ai.provider as GenerateFlashcardsOptions["provider"];
+        payload.model =
+          ai.provider === "openai" ? ai.openaiModel :
+          ai.provider === "anthropic" ? ai.anthropicModel :
+          ai.ollamaModel;
+        payload.apiKey =
+          ai.provider === "openai" ? ai.openaiKey :
+          ai.provider === "anthropic" ? ai.anthropicKey :
+          undefined;
+      }
+    } catch { /* ignore */ }
+  }
+
   const response = await fetch("/api/generate-flashcards", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(options),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {

@@ -1,5 +1,9 @@
-import { Graph as TrainerGraph } from "@/views/trainer/Graph";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { ROUTES } from "@/shared/config/routes";
 
 export default function TrainerGraphPage() {
-  return <TrainerGraph />;
+  const router = useRouter();
+  useEffect(() => { router.replace(ROUTES.GRAPH); }, [router]);
+  return null;
 }

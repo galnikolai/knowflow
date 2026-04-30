@@ -126,6 +126,19 @@ export const Notes: React.FC = () => {
     openTab(created);
   };
 
+  // Импорт из URL
+  const handleImportUrl = async (title: string, content: string) => {
+    const parentId = focusedFolderId;
+    const created = await addNote({
+      parent_id: parentId,
+      node_id: null,
+      title,
+      content,
+      is_folder: false,
+    });
+    openTab(created);
+  };
+
   const activeTab = openTabs.find((t) => t.id === activeTabId);
 
   return (
@@ -135,6 +148,7 @@ export const Notes: React.FC = () => {
       onCreateNote={handleCreateNote}
       onCreateFolder={handleCreateFolder}
       onImport={handleImport}
+      onImportUrl={handleImportUrl}
       focusedFolderId={focusedFolderId}
       onFocusFolder={handleFocusFolder}
     >

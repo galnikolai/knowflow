@@ -61,3 +61,45 @@ export async function removeFlashcard(id: string) {
   const { error } = await supabase.from("flashcards").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function addReview(
+  userId: string,
+  flashcardId: string,
+  grade: 0 | 3 | 5,
+  intervalAfter: number,
+  easeAfter: number
+): Promise<void> {
+  const { error } = await supabase.from("reviews").insert({
+    user_id: userId,
+    flashcard_id: flashcardId,
+    grade,
+    interval_after: intervalAfter,
+    ease_after: easeAfter,
+  });
+  // Non-fatal: analytics table may not exist yet
+  if (error) console.warn("addReview error:", error.message);
+}
+
+export type ReviewRow = {
+  id: string;
+  flashcard_id: string;
+  grade: 0 | 3 | 5;
+  interval_after: number;
+  ease_after: number;
+  reviewed_at: string;
+};
+
+export async function getReviews(userId: string, days = 60): Promise<ReviewRow[]> {
+  const since = new Date(Date.now() - days * 86400000).toISOString();
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("id, flashcard_id, grade, interval_after, ease_after, reviewed_at")
+    .eq("user_id", userId)
+    .gte("reviewed_at", since)
+    .order("reviewed_at", { ascending: false });
+  if (error) {
+    console.warn("getReviews error:", error.message);
+    return [];
+  }
+  return (data ?? []) as ReviewRow[];
+}

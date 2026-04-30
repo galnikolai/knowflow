@@ -32,10 +32,30 @@ interface QuestionState {
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 async function generateQuiz(content: string, count: number): Promise<QuizQuestion[]> {
+  let provider: string | undefined;
+  let model: string | undefined;
+  let apiKey: string | undefined;
+  try {
+    const stored = localStorage.getItem("knowflow-settings");
+    if (stored) {
+      const { state } = JSON.parse(stored) as { state: { ai: { provider: string; openaiKey: string; anthropicKey: string; openaiModel: string; anthropicModel: string; ollamaModel: string } } };
+      const ai = state.ai;
+      provider = ai.provider;
+      model =
+        ai.provider === "openai" ? ai.openaiModel :
+        ai.provider === "anthropic" ? ai.anthropicModel :
+        ai.ollamaModel;
+      apiKey =
+        ai.provider === "openai" ? ai.openaiKey :
+        ai.provider === "anthropic" ? ai.anthropicKey :
+        undefined;
+    }
+  } catch { /* ignore */ }
+
   const res = await fetch("/api/generate-quiz", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content, count }),
+    body: JSON.stringify({ content, count, provider, model, apiKey }),
   });
   if (!res.ok) {
     const err = await res.json();

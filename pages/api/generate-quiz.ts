@@ -14,6 +14,7 @@ interface GenerateQuizBody {
   count?: number;
   provider?: "openai" | "anthropic" | "ollama";
   model?: string;
+  apiKey?: string;
 }
 
 function buildQuizPrompt(content: string, count: number): string {
@@ -70,6 +71,7 @@ export default async function handler(
       count = 8,
       provider = "ollama",
       model,
+      apiKey: bodyApiKey,
     } = req.body as GenerateQuizBody;
 
     if (!content?.trim()) {
@@ -77,14 +79,15 @@ export default async function handler(
     }
 
     const apiKey =
-      provider === "openai"
+      bodyApiKey ||
+      (provider === "openai"
         ? process.env.OPENAI_API_KEY
         : provider === "anthropic"
         ? process.env.ANTHROPIC_API_KEY
-        : undefined;
+        : undefined);
 
     if (provider !== "ollama" && !apiKey) {
-      return res.status(500).json({ error: `API ключ для ${provider} не настроен` });
+      return res.status(400).json({ error: `Укажите API-ключ для ${provider} в настройках` });
     }
 
     const prompt = buildQuizPrompt(content, count);

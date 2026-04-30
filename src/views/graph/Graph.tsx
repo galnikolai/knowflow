@@ -6,10 +6,13 @@ import dynamic from "next/dynamic";
 import { GraphSidebar } from "@/widgets";
 import { useNotesStore } from "@/shared/store/useNotesStore";
 import { useFlashcardsStore } from "@/shared/store/useFlashcardsStore";
+import { useUserStore } from "@/shared/store/useUserStore";
+import { useSettingsStore } from "@/shared/store/useSettingsStore";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import type { Note } from "@/shared/api/notes";
 import { ROUTES } from "@/shared/config/routes";
+import { getNoteLinks, generateAndSaveLinks, type NoteLink } from "@/shared/api/noteLinks";
 import {
   Search,
   X,
@@ -18,6 +21,8 @@ import {
   FileText,
   Brain,
   Info,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 
 // ─── dynamic import (no SSR) ────────────────────────────────────────────────
@@ -42,6 +47,8 @@ interface GraphNode {
 interface GraphLink {
   source: string;
   target: string;
+  isAI?: boolean;
+  strength?: number;
 }
 
 // ─── color helpers ───────────────────────────────────────────────────────────
@@ -147,12 +154,18 @@ export const Graph: React.FC = () => {
   const cards = useFlashcardsStore((s) => s.cards);
   const fetchCards = useFlashcardsStore((s) => s.fetchCards);
 
+  const user = useUserStore((s) => s.user);
+  const { ai, getApiKey } = useSettingsStore();
+
   const [isMounted, setIsMounted] = useState(false);
   const [dark, setDark] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showLegend, setShowLegend] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ w: 0, h: 0 });
+  const [aiLinks, setAiLinks] = useState<NoteLink[]>([]);
+  const [showAiLinks, setShowAiLinks] = useState(true);
+  const [generatingLinks, setGeneratingLinks] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<{ centerAt?: (x: number, y: number, ms: number) => void; zoom?: (k: number, ms: number) => void } | null>(null);
 
@@ -181,6 +194,33 @@ export const Graph: React.FC = () => {
     fetchCards();
   }, [fetchNotes, fetchCards]);
 
+  // Load saved AI links from Supabase
+  useEffect(() => {
+    if (!user) return;
+    getNoteLinks(user.id).then(setAiLinks).catch(console.warn);
+  }, [user]);
+
+  const handleGenerateLinks = useCallback(async () => {
+    if (!user || generatingLinks) return;
+    setGeneratingLinks(true);
+    try {
+      const notesForLinks = notes
+        .filter((n) => !n.is_folder)
+        .map((n) => ({ id: n.id, title: n.title, content: n.content }));
+      const result = await generateAndSaveLinks(
+        user.id,
+        notesForLinks,
+        getApiKey(),
+        ai.provider
+      );
+      setAiLinks(result);
+    } catch (err) {
+      console.warn("generateLinks error:", err);
+    } finally {
+      setGeneratingLinks(false);
+    }
+  }, [user, notes, ai.provider, getApiKey, generatingLinks]);
+
   // Build graph data from notes
   const { nodes, links } = useMemo(() => {
     const idSet = new Set(notes.map((n) => n.id));
@@ -197,12 +237,19 @@ export const Graph: React.FC = () => {
       };
     });
 
-    const links: GraphLink[] = notes
+    const parentLinks: GraphLink[] = notes
       .filter((n) => n.parent_id && idSet.has(n.parent_id))
-      .map((n) => ({ source: n.parent_id!, target: n.id }));
+      .map((n) => ({ source: n.parent_id!, target: n.id, isAI: false }));
 
+    const aiGraphLinks: GraphLink[] = showAiLinks
+      ? aiLinks
+          .filter((l) => idSet.has(l.sourceId) && idSet.has(l.targetId))
+          .map((l) => ({ source: l.sourceId, target: l.targetId, isAI: true, strength: l.strength }))
+      : [];
+
+    const links: GraphLink[] = [...parentLinks, ...aiGraphLinks];
     return { nodes, links };
-  }, [notes, cards]);
+  }, [notes, cards, aiLinks, showAiLinks]);
 
   // Search filtering — highlight matched nodes
   const matchIds = useMemo(() => {
@@ -347,6 +394,26 @@ export const Graph: React.FC = () => {
           </div>
           <Button
             size="sm"
+            variant={showAiLinks ? "default" : "outline"}
+            className="h-8 px-2 gap-1.5 text-xs bg-card/90 backdrop-blur"
+            onClick={() => setShowAiLinks((v) => !v)}
+            title="AI-связи"
+          >
+            <Brain size={13} />
+            AI
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 px-2 gap-1.5 text-xs bg-card/90 backdrop-blur"
+            onClick={handleGenerateLinks}
+            disabled={generatingLinks}
+            title="Сгенерировать AI-связи"
+          >
+            {generatingLinks ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+          </Button>
+          <Button
+            size="sm"
             variant="outline"
             className="h-8 w-8 p-0 bg-card/90 backdrop-blur"
             onClick={() => setShowLegend((v) => !v)}
@@ -359,7 +426,13 @@ export const Graph: React.FC = () => {
         <div className="absolute top-4 right-48 z-10 flex items-center gap-3 text-xs text-muted-foreground bg-card/80 backdrop-blur border border-border rounded-lg px-3 py-1.5">
           <span>{notes.length} узлов</span>
           <span className="opacity-40">·</span>
-          <span>{links.length} связей</span>
+          <span>{links.filter((l) => !l.isAI).length} иерарх.</span>
+          {showAiLinks && aiLinks.length > 0 && (
+            <>
+              <span className="opacity-40">·</span>
+              <span className="text-violet-500 font-medium">{aiLinks.length} AI</span>
+            </>
+          )}
           {matchIds && (
             <>
               <span className="opacity-40">·</span>
@@ -389,7 +462,9 @@ export const Graph: React.FC = () => {
             height={canvasSize.h}
             graphData={{ nodes: nodes as unknown[], links: links as unknown[] }}
             backgroundColor={bgColor}
-            linkColor={() => linkColor}
+            linkColor={(link) => (link as GraphLink).isAI ? (dark ? "rgba(167,139,250,0.5)" : "rgba(124,58,237,0.4)") : linkColor}
+            linkWidth={(link) => (link as GraphLink).isAI ? Math.max(1, ((link as GraphLink).strength ?? 0.5) * 3) : 1}
+            linkLineDash={(link) => (link as GraphLink).isAI ? [4, 3] : []}
             linkWidth={1}
             linkDirectionalArrowLength={4}
             linkDirectionalArrowRelPos={1}

@@ -19,24 +19,26 @@ export default async function handler(
       provider = "ollama",
       model,
       count,
-    } = req.body as GenerateFlashcardsOptions;
+      apiKey: bodyApiKey,
+    } = req.body as GenerateFlashcardsOptions & { apiKey?: string };
 
     if (!content || !content.trim()) {
       return res.status(400).json({ error: "Контент не может быть пустым" });
     }
 
-    // Получаем API ключи из переменных окружения сервера
+    // bodyApiKey (из настроек пользователя) имеет приоритет над env
     const apiKey =
-      provider === "openai"
+      bodyApiKey ||
+      (provider === "openai"
         ? process.env.OPENAI_API_KEY
         : provider === "anthropic"
         ? process.env.ANTHROPIC_API_KEY
-        : undefined;
+        : undefined);
 
     if (provider !== "ollama" && !apiKey) {
       return res
-        .status(500)
-        .json({ error: `API ключ для ${provider} не настроен` });
+        .status(400)
+        .json({ error: `Укажите API-ключ для ${provider} в настройках` });
     }
 
     const aiProvider = createAIProvider(provider, apiKey);

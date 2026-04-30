@@ -60,6 +60,7 @@ interface NotesSidebarProps extends React.ComponentProps<typeof Sidebar> {
   onCreateNote?: () => void;
   onCreateFolder?: () => void;
   onImport?: (file: File) => void;
+  onImportUrl?: (title: string, content: string) => void;
   onRename?: () => void;
   onCollapseAll?: () => void;
   focusedFolderId?: string | null;
@@ -74,6 +75,7 @@ export function NotesSidebar({
   onCreateNote,
   onCreateFolder,
   onImport,
+  onImportUrl,
   onRename,
   onCollapseAll,
   focusedFolderId,
@@ -397,6 +399,7 @@ export function NotesSidebar({
               onCreateNote={onCreateNote}
               onCreateFolder={onCreateFolder}
               onImport={onImport}
+              onImportUrl={onImportUrl}
               onRename={onRename}
               onCollapseAll={handleCollapseAll}
               selectedId={selectedId}

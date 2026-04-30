@@ -111,10 +111,14 @@ export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
   reviewCard: async (id, grade) => {
     set({ loading: true, error: null });
     try {
+      const user = useUserStore.getState().user;
       const card = get().cards.find((c) => c.id === id);
       if (!card) throw new Error("Карточка не найдена");
       const updated = getNextSM2(card, grade);
       await api.updateFlashcard(id, updated);
+      if (user) {
+        await api.addReview(user.id, id, grade, updated.interval, updated.easeFactor);
+      }
       await get().fetchCards({ force: true });
     } catch (e: unknown) {
       set({ error: e instanceof Error ? e.message : String(e) });
