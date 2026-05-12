@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import * as api from "@/shared/api/learnspaces";
 import { useUserStore } from "@/shared/store/useUserStore";
+import { readCache, writeCache } from "@/shared/cache/asyncCache";
 
 interface LearnspacesStore {
   learnspaces: api.Learnspace[];
@@ -10,6 +11,10 @@ interface LearnspacesStore {
   fetchLearnspaces: (opts?: { force?: boolean }) => Promise<void>;
   addLearnspace: (name: string, noteIds: string[]) => Promise<api.Learnspace>;
   removeLearnspace: (id: string) => Promise<void>;
+}
+
+function cacheKey(userId: string) {
+  return `learnspaces_cache_${userId}`;
 }
 
 export const useLearnspacesStore = create<LearnspacesStore>((set, get) => ({
@@ -26,10 +31,17 @@ export const useLearnspacesStore = create<LearnspacesStore>((set, get) => ({
     }
     if (!opts?.force && get().hydratedUserId === user.id) return;
 
+    // Populate from cache for instant UI
+    if (get().learnspaces.length === 0) {
+      const cached = await readCache<api.Learnspace[]>(cacheKey(user.id));
+      if (cached) set({ learnspaces: cached });
+    }
+
     set({ loading: true, error: null });
     try {
       const data = await api.getLearnspaces(user.id);
       set({ learnspaces: data, loading: false, hydratedUserId: user.id });
+      await writeCache(cacheKey(user.id), data);
     } catch (e) {
       set({
         loading: false,
@@ -46,6 +58,8 @@ export const useLearnspacesStore = create<LearnspacesStore>((set, get) => ({
     set((state) => ({
       learnspaces: [newLearnspace, ...state.learnspaces],
     }));
+    const updated = useLearnspacesStore.getState().learnspaces;
+    await writeCache(cacheKey(user.id), updated);
     return newLearnspace;
   },
 
@@ -54,5 +68,10 @@ export const useLearnspacesStore = create<LearnspacesStore>((set, get) => ({
     set((state) => ({
       learnspaces: state.learnspaces.filter((l) => l.id !== id),
     }));
+    const user = useUserStore.getState().user;
+    if (user) {
+      const updated = useLearnspacesStore.getState().learnspaces;
+      await writeCache(cacheKey(user.id), updated);
+    }
   },
 }));

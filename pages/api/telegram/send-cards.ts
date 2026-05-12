@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import TelegramBot from "node-telegram-bot-api";
-import { supabase } from "@/shared/api/supabase";
+import { supabaseAdmin } from "@/shared/api/supabase.server";
 import {
   getTelegramUserByTelegramId,
   getDueFlashcardsForUser,
@@ -31,7 +31,7 @@ export default async function handler(
     }
 
     // Получаем всех активных пользователей Telegram
-    const { data: telegramUsers, error } = await supabase
+    const { data: telegramUsers, error } = await supabaseAdmin
       .from("telegram_users")
       .select("*")
       .eq("is_active", true);
@@ -63,10 +63,10 @@ export default async function handler(
           continue;
         }
 
-        // Получаем карточки для повторения
         const cards = await getDueFlashcardsForUser(
           telegramUser.user_id,
-          telegramUser.daily_limit
+          telegramUser.daily_limit,
+          supabaseAdmin
         );
 
         if (cards.length === 0) {

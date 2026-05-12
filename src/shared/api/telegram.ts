@@ -2,6 +2,7 @@
  * API для работы с Telegram ботом
  */
 
+import { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import type { Flashcard } from "@/entities/card/Card";
 
@@ -31,9 +32,10 @@ export interface TelegramUserSettings {
  * Получить пользователя Telegram по user_id приложения
  */
 export async function getTelegramUserByUserId(
-  userId: string
+  userId: string,
+  client: SupabaseClient = supabase
 ): Promise<TelegramUser | null> {
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("telegram_users")
     .select("*")
     .eq("user_id", userId)
@@ -67,9 +69,10 @@ export async function getTelegramUserByUserId(
  * Получить пользователя Telegram по telegram_user_id
  */
 export async function getTelegramUserByTelegramId(
-  telegramUserId: number
+  telegramUserId: number,
+  client: SupabaseClient = supabase
 ): Promise<TelegramUser | null> {
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("telegram_users")
     .select("*")
     .eq("telegram_user_id", telegramUserId)
@@ -108,9 +111,10 @@ export async function upsertTelegramUser(
     username?: string;
     firstName?: string;
     lastName?: string;
-  }
+  },
+  client: SupabaseClient = supabase
 ): Promise<TelegramUser> {
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("telegram_users")
     .upsert(
       {
@@ -151,7 +155,8 @@ export async function upsertTelegramUser(
  */
 export async function updateTelegramUserSettings(
   telegramUserId: number,
-  settings: TelegramUserSettings
+  settings: TelegramUserSettings,
+  client: SupabaseClient = supabase
 ): Promise<TelegramUser> {
   const updateData: Record<string, unknown> = {};
   if (settings.notificationTime !== undefined)
@@ -161,7 +166,7 @@ export async function updateTelegramUserSettings(
     updateData.daily_limit = settings.dailyLimit;
   if (settings.isActive !== undefined) updateData.is_active = settings.isActive;
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("telegram_users")
     .update(updateData)
     .eq("telegram_user_id", telegramUserId)
@@ -191,9 +196,10 @@ export async function updateTelegramUserSettings(
  */
 export async function getDueFlashcardsForUser(
   userId: string,
-  limit: number = 10
+  limit: number = 10,
+  client: SupabaseClient = supabase
 ): Promise<Flashcard[]> {
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("flashcards")
     .select("*")
     .eq("user_id", userId)
@@ -222,10 +228,10 @@ export async function getDueFlashcardsForUser(
  */
 export async function reviewFlashcard(
   cardId: string,
-  grade: 0 | 3 | 5
+  grade: 0 | 3 | 5,
+  client: SupabaseClient = supabase
 ): Promise<void> {
-  // Получаем текущую карточку
-  const { data: cardData, error: fetchError } = await supabase
+  const { data: cardData, error: fetchError } = await client
     .from("flashcards")
     .select("*")
     .eq("id", cardId)
@@ -234,7 +240,7 @@ export async function reviewFlashcard(
   if (fetchError) throw fetchError;
   if (!cardData) throw new Error("Карточка не найдена");
 
-  // Применяем алгоритм SM-2
+  // SM-2 алгоритм
   let { interval, repetitions, ease_factor } = cardData;
 
   if (grade === 0) {
@@ -254,8 +260,7 @@ export async function reviewFlashcard(
   const nextReview = new Date();
   nextReview.setDate(nextReview.getDate() + interval);
 
-  // Обновляем карточку
-  const { error: updateError } = await supabase
+  const { error: updateError } = await client
     .from("flashcards")
     .update({
       interval,

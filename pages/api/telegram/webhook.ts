@@ -7,7 +7,7 @@ import {
   getDueFlashcardsForUser,
   reviewFlashcard,
 } from "@/shared/api/telegram";
-import { supabase } from "@/shared/api/supabase";
+import { supabaseAdmin } from "@/shared/api/supabase.server";
 
 // Инициализация бота
 const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -39,7 +39,7 @@ async function sendCard(
 
 // Обработка callback_query (нажатия на кнопки)
 async function handleShowAnswer(cardId: string, chatId: number) {
-  const { data: cardData } = await supabase
+  const { data: cardData } = await supabaseAdmin
     .from("flashcards")
     .select("answer")
     .eq("id", cardId)
@@ -73,7 +73,7 @@ async function handleMessage(msg: TelegramBot.Message) {
 
   try {
     if (text === "/start") {
-      let telegramUser = await getTelegramUserByTelegramId(telegramUserId);
+      let telegramUser = await getTelegramUserByTelegramId(telegramUserId, supabaseAdmin);
 
       if (!telegramUser) {
         await bot.sendMessage(
@@ -122,7 +122,7 @@ async function handleMessage(msg: TelegramBot.Message) {
         username: msg.from?.username,
         firstName: msg.from?.first_name,
         lastName: msg.from?.last_name,
-      });
+      }, supabaseAdmin);
 
       await bot.sendMessage(
         chatId,
@@ -132,7 +132,7 @@ async function handleMessage(msg: TelegramBot.Message) {
     }
 
     if (text === "/study") {
-      const telegramUser = await getTelegramUserByTelegramId(telegramUserId);
+      const telegramUser = await getTelegramUserByTelegramId(telegramUserId, supabaseAdmin);
       if (!telegramUser) {
         await bot.sendMessage(
           chatId,
@@ -143,7 +143,8 @@ async function handleMessage(msg: TelegramBot.Message) {
 
       const cards = await getDueFlashcardsForUser(
         telegramUser.userId,
-        telegramUser.dailyLimit
+        telegramUser.dailyLimit,
+        supabaseAdmin
       );
 
       if (cards.length === 0) {
@@ -159,7 +160,7 @@ async function handleMessage(msg: TelegramBot.Message) {
     }
 
     if (text === "/stats") {
-      const telegramUser = await getTelegramUserByTelegramId(telegramUserId);
+      const telegramUser = await getTelegramUserByTelegramId(telegramUserId, supabaseAdmin);
       if (!telegramUser) {
         await bot.sendMessage(
           chatId,
@@ -168,8 +169,8 @@ async function handleMessage(msg: TelegramBot.Message) {
         return;
       }
 
-      const cards = await getDueFlashcardsForUser(telegramUser.userId, 1000);
-      const { count } = await supabase
+      const cards = await getDueFlashcardsForUser(telegramUser.userId, 1000, supabaseAdmin);
+      const { count } = await supabaseAdmin
         .from("flashcards")
         .select("id", { count: "exact", head: true })
         .eq("user_id", telegramUser.userId);
@@ -186,7 +187,7 @@ async function handleMessage(msg: TelegramBot.Message) {
     }
 
     if (text === "/settings") {
-      const telegramUser = await getTelegramUserByTelegramId(telegramUserId);
+      const telegramUser = await getTelegramUserByTelegramId(telegramUserId, supabaseAdmin);
       if (!telegramUser) {
         await bot.sendMessage(
           chatId,
@@ -265,14 +266,15 @@ async function handleCallbackQuery(query: TelegramBot.CallbackQuery) {
       const [_, cardId, gradeStr] = data.split("_");
       const grade = parseInt(gradeStr) as 0 | 3 | 5;
 
-      await reviewFlashcard(cardId, grade);
+      await reviewFlashcard(cardId, grade, supabaseAdmin);
 
-      const telegramUser = await getTelegramUserByTelegramId(telegramUserId);
+      const telegramUser = await getTelegramUserByTelegramId(telegramUserId, supabaseAdmin);
       if (!telegramUser) return;
 
       const cards = await getDueFlashcardsForUser(
         telegramUser.userId,
-        telegramUser.dailyLimit
+        telegramUser.dailyLimit,
+        supabaseAdmin
       );
 
       if (cards.length === 0) {
@@ -310,12 +312,12 @@ async function handleCallbackQuery(query: TelegramBot.CallbackQuery) {
     }
 
     if (data === "settings_toggle") {
-      const telegramUser = await getTelegramUserByTelegramId(telegramUserId);
+      const telegramUser = await getTelegramUserByTelegramId(telegramUserId, supabaseAdmin);
       if (!telegramUser) return;
 
       await updateTelegramUserSettings(telegramUserId, {
         isActive: !telegramUser.isActive,
-      });
+      }, supabaseAdmin);
 
       await bot.sendMessage(
         chatId,
