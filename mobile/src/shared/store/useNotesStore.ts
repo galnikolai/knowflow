@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import * as api from "@/shared/api/notes";
 import { useUserStore } from "@/shared/store/useUserStore";
+import { readCache, writeCache } from "@/shared/cache/asyncCache";
 
 interface NotesStore {
   notes: api.Note[];
@@ -18,6 +19,10 @@ interface NotesStore {
   removeNote: (id: string) => Promise<void>;
 }
 
+function cacheKey(userId: string) {
+  return `notes_cache_${userId}`;
+}
+
 export const useNotesStore = create<NotesStore>((set, get) => ({
   notes: [],
   loading: false,
@@ -32,11 +37,19 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     }
     if (!opts?.force && get().hydratedUserId === user.id) return;
 
+    // Populate from cache immediately for instant UI
+    if (get().notes.length === 0) {
+      const cached = await readCache<api.Note[]>(cacheKey(user.id));
+      if (cached) set({ notes: cached });
+    }
+
     set({ loading: true, error: null });
     try {
       const notes = await api.getNotes(user.id);
       set({ notes, hydratedUserId: user.id });
+      await writeCache(cacheKey(user.id), notes);
     } catch (e) {
+      // On network failure keep cached data but mark error
       set({ error: e instanceof Error ? e.message : String(e), hydratedUserId: null });
     } finally {
       set({ loading: false });
@@ -52,12 +65,28 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   },
 
   updateNote: async (id, update) => {
+    // Optimistic update
+    set((state) => ({
+      notes: state.notes.map((n) =>
+        n.id === id ? { ...n, ...update, updated_at: new Date().toISOString() } : n
+      ),
+    }));
     await api.updateNote(id, update);
-    await get().fetchNotes({ force: true });
+    const user = useUserStore.getState().user;
+    if (user) {
+      const notes = useNotesStore.getState().notes;
+      await writeCache(cacheKey(user.id), notes);
+    }
   },
 
   removeNote: async (id) => {
+    // Optimistic remove
+    set((state) => ({ notes: state.notes.filter((n) => n.id !== id) }));
     await api.removeNote(id);
-    await get().fetchNotes({ force: true });
+    const user = useUserStore.getState().user;
+    if (user) {
+      const notes = useNotesStore.getState().notes;
+      await writeCache(cacheKey(user.id), notes);
+    }
   },
 }));

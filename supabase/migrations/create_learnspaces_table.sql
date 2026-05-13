@@ -1,4 +1,5 @@
--- Создание таблицы learnspaces
+-- Таблица пространств изучения (learnspaces)
+-- Требует: 00_functions.sql
 CREATE TABLE IF NOT EXISTS learnspaces (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -39,15 +40,6 @@ CREATE POLICY "Users can delete their own learnspaces"
   ON learnspaces
   FOR DELETE
   USING (auth.uid() = user_id);
-
--- Функция для автоматического обновления updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
 -- Триггер для автоматического обновления updated_at
 CREATE TRIGGER update_learnspaces_updated_at

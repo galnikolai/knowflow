@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getTelegramUserByUserId } from "@/shared/api/telegram";
+import { supabaseAdmin } from "@/shared/api/supabase.server";
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,8 +17,7 @@ export default async function handler(
       return res.status(400).json({ error: "userId обязателен" });
     }
 
-    // Проверяем, не привязан ли уже Telegram
-    const existing = await getTelegramUserByUserId(userId);
+    const existing = await getTelegramUserByUserId(userId, supabaseAdmin);
     if (existing) {
       return res.status(200).json({
         linked: true,

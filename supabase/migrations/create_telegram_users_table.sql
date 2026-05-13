@@ -1,4 +1,5 @@
--- Создание таблицы для связи пользователей приложения с Telegram
+-- Таблица привязки пользователей к Telegram-боту
+-- Требует: 00_functions.sql
 CREATE TABLE IF NOT EXISTS telegram_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,

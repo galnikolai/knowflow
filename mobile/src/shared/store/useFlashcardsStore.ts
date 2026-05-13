@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import * as api from "@/shared/api/flashcards";
 import { useUserStore } from "@/shared/store/useUserStore";
+import { readCache, writeCache } from "@/shared/cache/asyncCache";
 
 type Flashcard = api.Flashcard;
 
@@ -41,6 +42,10 @@ interface FlashcardsStore {
   getDueCardsForNotes: (noteIds: string[]) => Flashcard[];
 }
 
+function cacheKey(userId: string) {
+  return `flashcards_cache_${userId}`;
+}
+
 export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
   cards: [],
   loading: false,
@@ -55,10 +60,17 @@ export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
     }
     if (!opts?.force && get().hydratedUserId === user.id) return;
 
+    // Populate from cache for instant UI
+    if (get().cards.length === 0) {
+      const cached = await readCache<Flashcard[]>(cacheKey(user.id));
+      if (cached) set({ cards: cached });
+    }
+
     set({ loading: true, error: null });
     try {
       const cards = await api.getFlashcards(user.id);
       set({ cards, hydratedUserId: user.id });
+      await writeCache(cacheKey(user.id), cards);
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e), hydratedUserId: null });
     } finally {
@@ -74,18 +86,28 @@ export const useFlashcardsStore = create<FlashcardsStore>((set, get) => ({
   },
 
   removeCard: async (id) => {
-    await api.removeFlashcard(id);
+    // Optimistic remove
     set((state) => ({ cards: state.cards.filter((c) => c.id !== id) }));
+    await api.removeFlashcard(id);
+    const user = useUserStore.getState().user;
+    if (user) {
+      await writeCache(cacheKey(user.id), useFlashcardsStore.getState().cards);
+    }
   },
 
   reviewCard: async (id, grade) => {
     const card = get().cards.find((c) => c.id === id);
     if (!card) return;
     const updated = getNextSM2(card, grade);
+    // Optimistic update
     set((state) => ({
       cards: state.cards.map((c) => (c.id === id ? updated : c)),
     }));
     await api.updateFlashcard(id, updated);
+    const user = useUserStore.getState().user;
+    if (user) {
+      await writeCache(cacheKey(user.id), useFlashcardsStore.getState().cards);
+    }
   },
 
   getDueCards: () => get().cards.filter((c) => c.nextReview <= Date.now()),
