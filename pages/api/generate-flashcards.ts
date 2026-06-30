@@ -4,6 +4,8 @@ import type {
   FlashcardData,
 } from "@/shared/api/ai-generator";
 import { createAIProvider } from "@/shared/api/ai-generator";
+import { requireApiUser } from "@/shared/api/auth.server";
+import { checkRateLimit } from "@/shared/api/rate-limit.server";
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,6 +13,15 @@ export default async function handler(
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const user = await requireApiUser(req, res);
+  if (!user) return;
+
+  const rate = checkRateLimit(req, { userId: user.id, limit: 10, windowMs: 60_000 });
+  if (!rate.allowed) {
+    res.setHeader("Retry-After", String(rate.retryAfterSec));
+    return res.status(429).json({ error: "Слишком много запросов. Попробуйте позже." });
   }
 
   try {
@@ -25,7 +36,6 @@ export default async function handler(
       return res.status(400).json({ error: "Контент не может быть пустым" });
     }
 
-    // Получаем API ключи из переменных окружения сервера
     const apiKey =
       provider === "openai"
         ? process.env.OPENAI_API_KEY

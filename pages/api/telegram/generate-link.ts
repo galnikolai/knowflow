@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getTelegramUserByUserId } from "@/shared/api/telegram";
 import { supabaseAdmin } from "@/shared/api/supabase.server";
+import { requireApiUser } from "@/shared/api/auth.server";
+import { createTelegramLinkToken } from "@/shared/api/telegram-link-token";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,14 +12,11 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const user = await requireApiUser(req, res);
+  if (!user) return;
+
   try {
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: "userId обязателен" });
-    }
-
-    const existing = await getTelegramUserByUserId(userId, supabaseAdmin);
+    const existing = await getTelegramUserByUserId(user.id, supabaseAdmin);
     if (existing) {
       return res.status(200).json({
         linked: true,
@@ -26,8 +25,7 @@ export default async function handler(
       });
     }
 
-    // Генерируем временный код (в продакшене лучше использовать более безопасный подход)
-    const linkCode = userId;
+    const linkCode = createTelegramLinkToken(user.id);
 
     return res.status(200).json({
       linked: false,
@@ -41,4 +39,3 @@ export default async function handler(
     });
   }
 }
-

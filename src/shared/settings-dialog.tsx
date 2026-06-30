@@ -22,7 +22,7 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const logout = useUserStore((s) => s.logout);
   const { themePresetId, setThemePresetId } = useTheme();
 

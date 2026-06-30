@@ -4,163 +4,61 @@
 
 ## Архитектура проекта
 
-Проект построен на основе методологии **Feature-Sliced Design (FSD)** - современного подхода к организации фронтенд-приложений, который обеспечивает масштабируемость, переиспользование кода и понятную структуру.
-
-### Принципы FSD
-
-1. **Слои** - вертикальное разделение по уровню абстракции
-2. **Слайсы** - горизонтальное разделение по бизнес-логике
-3. **Сегменты** - техническое разделение внутри слайса
+Веб-приложение построено на **Next.js 16 (Pages Router)** с организацией UI по принципам **Feature-Sliced Design (FSD)**.
 
 ### Структура проекта
 
 ```
+pages/                      # Next.js Pages Router (маршруты)
+├── _app.tsx               # Провайдеры, инициализация auth
+├── collection.tsx         # Коллекция заметок
+├── graph.tsx              # Граф знаний
+├── trainer/               # Тренировки (карточки, квиз, study)
+└── api/                   # Serverless API routes
+
 src/
-├── app/                    # Инициализация приложения
-│   ├── App.tsx            # Корневой компонент
-│   ├── main.tsx           # Точка входа
-│   └── router/            # Конфигурация роутинга
-├── pages/                 # Страницы приложения
-│   ├── login/             # Страница авторизации
-│   ├── notes/             # Страница заметок
-│   ├── graph/             # Страница графа знаний
-│   ├── study/             # Страница изучения
-│   └── settings/          # Страница настроек
-├── widgets/               # Крупные UI блоки
-│   └── sidebar/           # Боковая панель навигации
-├── features/              # Бизнес-функциональность
-│   ├── auth/              # Авторизация
-│   └── graph/             # Работа с графом знаний
-├── entities/              # Бизнес-сущности
-│   ├── card/              # Карточки для изучения
-│   ├── login-form/        # Форма авторизации
-│   ├── nav-user/          # Навигация пользователя
-│   └── note/              # Заметки и редактор
-├── shared/                # Переиспользуемые ресурсы
-│   ├── api/               # API клиенты
-│   ├── store/             # Глобальное состояние
-│   ├── ui/                # UI компоненты
-│   ├── hooks/             # Переиспользуемые хуки
-│   └── config/            # Конфигурация
+├── views/                 # UI-страницы (композиция виджетов)
+├── widgets/               # Крупные UI-блоки (sidebar и др.)
+├── entities/              # Бизнес-сущности (card, note, login-form)
+├── shared/                # API, store, ui, hooks, i18n
 ├── lib/                   # Утилиты
-├── hooks/                 # Локальные хуки
-electron/                   # Electron конфигурация
-├── main.cjs              # Главный процесс Electron (CommonJS: при type:module .js был бы ESM)
-scripts/                    # Скрипты для разработки
-└── dev-electron.sh        # Скрипт запуска Electron
+└── __tests__/             # Тесты Vitest
+
+middleware.ts              # Защита маршрутов (Supabase session cookies)
+mobile/                    # Expo React Native приложение
+electron/                  # Electron desktop
+supabase/migrations/       # SQL-миграции с RLS
 ```
 
-## Описание слоев
+### Маршрутизация
 
-### 🚀 App (Приложение)
-**Назначение**: Инициализация приложения, провайдеры, роутинг
+- `/` → редирект на `/collection`
+- `/login` — публичная страница входа
+- `/collection`, `/graph`, `/settings`, `/analytics`, `/trainer/*` — защищены `middleware.ts` и `RequireAuth`
 
-**Содержимое**:
-- `App.tsx` - корневой компонент с провайдерами
-- `main.tsx` - точка входа в приложение
-- `router/` - конфигурация React Router
+### API routes
 
-**Особенности**:
-- Инициализация Supabase клиента
-- Настройка глобальных провайдеров (SidebarProvider)
-- Обработка состояния аутентификации
-
-### 📄 Pages (Страницы)
-**Назначение**: Композиция страниц из виджетов и фич
-
-**Содержимое**:
-- `Login` - страница авторизации
-- `Notes` - страница управления заметками
-- `Graph` - страница графа знаний
-- `Study` - страница изучения с карточками
-- `Settings` - страница настроек
-
-**Особенности**:
-- Каждая страница композирует виджеты и фичи
-- Минимальная бизнес-логика
-- Фокус на композиции UI
-
-### 🧩 Widgets (Виджеты)
-**Назначение**: Крупные UI блоки, композирующие фичи и сущности
-
-**Содержимое**:
-- `sidebar/` - боковая панель навигации
-  - `Sidebar` - основной компонент сайдбара
-  - `NotesSidebar` - сайдбар для заметок
-  - `GraphSidebar` - сайдбар для графа
-  - `StudySidebar` - сайдбар для изучения
-  - `SettingsSidebar` - сайдбар настроек
-
-**Особенности**:
-- Композируют фичи и сущности
-- Содержат сложную UI логику
-- Могут иметь собственное состояние
-
-### ⚡ Features (Фичи)
-**Назначение**: Бизнес-функциональность, пользовательские сценарии
-
-**Содержимое**:
-- `auth/` - функциональность авторизации
-- `graph/` - работа с графом знаний
-
-**Особенности**:
-- Инкапсулируют пользовательские сценарии
-- Могут использовать сущности и shared ресурсы
-- Содержат бизнес-логику фичи
-
-### 🏗️ Entities (Сущности)
-**Назначение**: Бизнес-сущности приложения
-
-**Содержимое**:
-- `card/` - карточки для изучения
-  - `Card.tsx` - компонент карточки
-  - `CreateCardForm.tsx` - форма создания карточки
-- `login-form/` - форма авторизации
-- `nav-user/` - навигация пользователя
-- `note/` - заметки и редактор
-  - `NoteEditor.tsx` - редактор заметок (TipTap)
-  - `FileTree.tsx` - дерево файлов
-  - `Node.ts`, `Edge.ts` - типы для графа
-
-**Особенности**:
-- Представляют бизнес-объекты
-- Содержат минимальную бизнес-логику
-- Переиспользуются в фичах и виджетах
-
-### 🔧 Shared (Общие ресурсы)
-**Назначение**: Переиспользуемые ресурсы по всему приложению
-
-**Содержимое**:
-- `api/` - API клиенты
-  - `supabase.ts` - клиент Supabase
-  - `notes.ts` - API для заметок
-  - `flashcards.ts` - API для карточек
-- `store/` - глобальное состояние (Zustand)
-  - `useUserStore.ts` - состояние пользователя
-  - `useNotesStore.ts` - состояние заметок
-  - `useFlashcardsStore.ts` - состояние карточек
-  - `useGraphStore.ts` - состояние графа
-- `ui/` - UI компоненты (shadcn/ui)
-- `hooks/` - переиспользуемые хуки
-- `config/` - конфигурация
-
-**Особенности**:
-- Используются во всех слоях
-- Не содержат бизнес-логики
-- Максимально переиспользуемы
+| Endpoint | Назначение | Защита |
+|----------|------------|--------|
+| `/api/generate-flashcards` | AI-генерация карточек | JWT + rate limit |
+| `/api/generate-quiz` | AI-генерация квиза | JWT + rate limit |
+| `/api/telegram/generate-link` | Код привязки Telegram | JWT |
+| `/api/telegram/webhook` | Webhook бота | Secret token |
+| `/api/telegram/send-cards` | Cron-рассылка карточек | `TELEGRAM_CRON_SECRET` |
 
 ## Технологический стек
 
-- **Frontend**: React 19, TypeScript, Next.js 16 (Turbopack)
+- **Frontend**: React 19, TypeScript, Next.js 16 (Pages Router, Turbopack)
+- **Mobile**: Expo 55, React Native
 - **Desktop**: Electron
-- **UI**: Tailwind CSS, shadcn/ui, Radix UI
-- **Роутинг**: React Router v7
+- **UI**: Tailwind CSS 4, shadcn/ui, Radix UI
+- **Auth**: Supabase Auth (`@supabase/ssr` cookies + middleware)
 - **Состояние**: Zustand
-- **Backend**: Supabase
+- **Backend**: Supabase (Postgres + RLS)
 - **Редактор**: TipTap
-- **Граф**: React Force Graph, Three.js
-- **Стилизация**: Tailwind CSS
-- **Сборка**: electron-builder
+- **Граф**: react-force-graph-2d
+- **Тесты**: Vitest
+- **Сборка desktop**: electron-builder
 
 ## Правила импортов FSD
 
@@ -287,7 +185,7 @@ npm run electron:dist
 **Подпись на macOS:** в `package.json` **не** задан жёсткий `mac.identity` — иначе `electron-builder` подписывает даже при `CSC_IDENTITY_AUTO_DISCOVERY=false`, и скрипт «без подписи» не срабатывает.
 
 - **`npm run electron:dist`** — подпись **автовыбором** (первый подходящий сертификат на машине).
-- **`npm run electron:dist:signed`** — подпись сертификатом **Apple Development: galitskynikolai@yandex.ru (SG27MJ9RV2)** (смените в `package.json` в скрипте `electron:dist:signed`, если сертификат другой).
+- **`npm run electron:dist:signed`** — подпись через переменную `CSC_NAME` (задайте сертификат в окружении).
 - **`npm run electron:dist:unsigned`** — **без подписи** (`CSC_IDENTITY_AUTO_DISCOVERY=false` + `env`, без `mac.identity`). DMG соберётся; при первом запуске — **ПКМ → Открыть** в Gatekeeper.
 
 Если окно связки ключей **не принимает пароль** при подписи — это пароль связки «login» / доступ к ключу; для локальной сборки используйте **`electron:dist:unsigned`**.
@@ -301,12 +199,26 @@ npm run electron:dist
 
 ## Переменные окружения
 
-Создайте файл `.env.local`:
+Скопируйте `.env.example` в `.env.local` и заполните значения:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Telegram (опционально)
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CRON_SECRET=
+TELEGRAM_WEBHOOK_SECRET=
+TELEGRAM_LINK_SECRET=
+TELEGRAM_ADMIN_SECRET=
+
+# AI (опционально)
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
 ```
+
+**Важно:** не коммитьте `.env` и `.env.local` в Git. Файлы `.env` и `mobile/.env` должны оставаться только локально.
 
 ---
 

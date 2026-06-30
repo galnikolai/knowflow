@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createMocks } from "node-mocks-http";
 
-// Mock the AI provider before importing the handler
 vi.mock("@/shared/api/ai-generator", () => ({
   createAIProvider: vi.fn(() => ({
     generateFlashcards: vi.fn().mockResolvedValue([
@@ -11,13 +10,31 @@ vi.mock("@/shared/api/ai-generator", () => ({
   })),
 }));
 
+vi.mock("@/shared/api/auth.server", () => ({
+  requireApiUser: vi.fn().mockResolvedValue({ id: "test-user-id" }),
+}));
+
 import handler from "../../../pages/api/generate-flashcards";
+import { requireApiUser } from "@/shared/api/auth.server";
 
 describe("POST /api/generate-flashcards", () => {
   it("возвращает 405 при GET-запросе", async () => {
     const { req, res } = createMocks({ method: "GET" });
-    await handler(req as any, res as any);
+    await handler(req, res);
     expect(res._getStatusCode()).toBe(405);
+  });
+
+  it("возвращает 401 без авторизации", async () => {
+    vi.mocked(requireApiUser).mockImplementationOnce(async (_req, res) => {
+      res.status(401).json({ error: "Unauthorized" });
+      return null;
+    });
+    const { req, res } = createMocks({
+      method: "POST",
+      body: { content: "Текст" },
+    });
+    await handler(req, res);
+    expect(res._getStatusCode()).toBe(401);
   });
 
   it("возвращает 400 при пустом контенте", async () => {
@@ -25,7 +42,7 @@ describe("POST /api/generate-flashcards", () => {
       method: "POST",
       body: { content: "   " },
     });
-    await handler(req as any, res as any);
+    await handler(req, res);
     expect(res._getStatusCode()).toBe(400);
     expect(JSON.parse(res._getData()).error).toBeTruthy();
   });
@@ -35,7 +52,7 @@ describe("POST /api/generate-flashcards", () => {
       method: "POST",
       body: { content: "Текст для генерации карточек", provider: "ollama" },
     });
-    await handler(req as any, res as any);
+    await handler(req, res);
     expect(res._getStatusCode()).toBe(200);
     const body = JSON.parse(res._getData());
     expect(Array.isArray(body.cards)).toBe(true);
@@ -50,7 +67,7 @@ describe("POST /api/generate-flashcards", () => {
       method: "POST",
       body: { content: "Текст", provider: "openai" },
     });
-    await handler(req as any, res as any);
+    await handler(req, res);
     expect(res._getStatusCode()).toBe(500);
   });
 });

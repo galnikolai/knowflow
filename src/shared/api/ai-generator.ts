@@ -7,6 +7,8 @@
  * - Ollama (локально)
  */
 
+import { getAuthHeaders } from "@/shared/api/api-client";
+
 export interface FlashcardData {
   question: string;
   answer: string;
@@ -417,9 +419,7 @@ export async function generateFlashcards(
 ): Promise<FlashcardData[]> {
   const response = await fetch("/api/generate-flashcards", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: await getAuthHeaders(),
     body: JSON.stringify(options),
   });
 

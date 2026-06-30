@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Download, Upload, FileJson, FileText, X } from "lucide-react";
+import { Upload, FileJson, FileText, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,

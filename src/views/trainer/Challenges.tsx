@@ -49,11 +49,6 @@ export const Challenges: React.FC = () => {
     });
   }, [learnspaces, cards, notes]);
 
-  const getNoteName = (noteId: string) => {
-    const note = notes.find((n) => n.id === noteId);
-    return note?.title || "Неизвестная заметка";
-  };
-
   return (
     <TrainerSidebar>
       <div
