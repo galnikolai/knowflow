@@ -12,14 +12,16 @@ dist
 dist-ssr
 dist-electron
 *.local
+.env
 .env.production
 .env*.local
+mobile/.env
 
 mobile/.expo/metro/
 mobile/.expo/devices.json
 # Electron
 out/
-app/
+/app/
 release/
 
 # Next.js

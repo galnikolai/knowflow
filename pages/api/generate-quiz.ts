@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createAIProvider } from "@/shared/api/ai-generator";
+import { requireApiUser } from "@/shared/api/auth.server";
+import { checkRateLimit } from "@/shared/api/rate-limit.server";
 
 export interface QuizQuestion {
   type: "multiple_choice" | "true_false";
@@ -64,6 +65,15 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const user = await requireApiUser(req, res);
+  if (!user) return;
+
+  const rate = checkRateLimit(req, { userId: user.id, limit: 10, windowMs: 60_000 });
+  if (!rate.allowed) {
+    res.setHeader("Retry-After", String(rate.retryAfterSec));
+    return res.status(429).json({ error: "Слишком много запросов. Попробуйте позже." });
+  }
+
   try {
     const {
       content,
@@ -89,12 +99,6 @@ export default async function handler(
 
     const prompt = buildQuizPrompt(content, count);
 
-    // Reuse AI providers from ai-generator — but we need raw text output.
-    // So we call the underlying model directly through the existing provider.
-    const aiProvider = createAIProvider(provider, apiKey);
-
-    // We call generateFlashcards with our custom prompt embedded in content
-    // and then parse result ourselves. Simpler: duplicate minimal fetch here.
     const baseURL =
       provider === "openai"
         ? "https://api.openai.com/v1"
@@ -137,7 +141,6 @@ export default async function handler(
       const data = await r.json();
       rawText = data.content?.[0]?.text ?? "";
     } else {
-      // Ollama
       const r = await fetch(`${baseURL}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -152,7 +155,6 @@ export default async function handler(
       rawText = data.response ?? "";
     }
 
-    // Strip markdown fences if present
     const cleaned = rawText
       .replace(/```json\n?/g, "")
       .replace(/```\n?/g, "")
@@ -164,13 +166,13 @@ export default async function handler(
     const parsed = JSON.parse(jsonMatch[0]);
     const questions: QuizQuestion[] = parsed.questions ?? [];
 
-    // Validate structure
     const valid = questions.filter(
       (q) =>
         q.type &&
         q.question &&
         q.answer &&
-        (q.type !== "multiple_choice" || (Array.isArray(q.options) && q.options.length >= 2))
+        (q.type !== "multiple_choice" ||
+          (Array.isArray(q.options) && q.options.length >= 2))
     );
 
     return res.status(200).json({ questions: valid });

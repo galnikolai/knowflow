@@ -8,7 +8,6 @@ import { useNotesStore } from "@/shared/store/useNotesStore";
 import { useFlashcardsStore } from "@/shared/store/useFlashcardsStore";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
-import type { Note } from "@/shared/api/notes";
 import { ROUTES } from "@/shared/config/routes";
 import {
   Search,

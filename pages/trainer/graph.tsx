@@ -1,5 +1,10 @@
-import { Graph as TrainerGraph } from "@/views/trainer/Graph";
+import { Graph } from "@/views/trainer/Graph";
+import { RequireAuth } from "@/shared/components/RequireAuth";
 
 export default function TrainerGraphPage() {
-  return <TrainerGraph />;
+  return (
+    <RequireAuth>
+      <Graph />
+    </RequireAuth>
+  );
 }

@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { useTheme } from "@/shared/context/useTheme";
 import { useNotesStore } from "@/shared/store/useNotesStore";
 import { useWorkspacesStore } from "@/shared/store/useWorkspacesStore";
 import {
@@ -34,7 +33,6 @@ export const CreateWorkspaceDialog: React.FC<CreateWorkspaceDialogProps> = ({
   open,
   onOpenChange,
 }) => {
-  const { themeColors } = useTheme();
   const notes = useNotesStore((s) => s.notes);
   const fetchNotes = useNotesStore((s) => s.fetchNotes);
   const addWorkspace = useWorkspacesStore((s) => s.addWorkspace);

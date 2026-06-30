@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/shared/ui/button";
 import { RotateCcw, X, Check, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,15 +31,9 @@ export const Card: React.FC<CardProps> = ({
   onRate,
   className,
 }) => {
-  const [isFlipping, setIsFlipping] = useState(false);
-
   const handleFlip = () => {
     if (!showAnswer) {
-      setIsFlipping(true);
-      setTimeout(() => {
-        setIsFlipping(false);
-        onShowAnswer();
-      }, 150);
+      onShowAnswer();
     }
   };
 

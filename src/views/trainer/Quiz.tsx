@@ -17,6 +17,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { ROUTES } from "@/shared/config/routes";
+import { getAuthHeaders } from "@/shared/api/api-client";
 
 // ─── types ─────────────────────────────────────────────────────────────────
 
@@ -34,7 +35,7 @@ interface QuestionState {
 async function generateQuiz(content: string, count: number): Promise<QuizQuestion[]> {
   const res = await fetch("/api/generate-quiz", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: await getAuthHeaders(),
     body: JSON.stringify({ content, count }),
   });
   if (!res.ok) {

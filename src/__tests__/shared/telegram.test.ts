@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from "vitest";
 import {
   getTelegramUserByUserId,
   getTelegramUserByTelegramId,
-  upsertTelegramUser,
   reviewFlashcard,
 } from "@/shared/api/telegram";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 function makeClient(overrides: Record<string, unknown> = {}) {
   const chain: Record<string, unknown> = {
@@ -15,7 +15,7 @@ function makeClient(overrides: Record<string, unknown> = {}) {
     single: vi.fn().mockResolvedValue({ data: null, error: null }),
     ...overrides,
   };
-  return { from: vi.fn().mockReturnValue(chain), ...chain } as any;
+  return { from: vi.fn().mockReturnValue(chain), ...chain } as unknown as SupabaseClient;
 }
 
 describe("telegram API helpers", () => {
@@ -75,19 +75,14 @@ describe("reviewFlashcard SM-2", () => {
       repetitions: 3,
       ease_factor: 2.5,
     };
-    let updatedData: Record<string, unknown> = {};
     const chain = {
       select: vi.fn().mockReturnThis(),
-      update: vi.fn().mockImplementation((d) => {
-        updatedData = d;
-        return chain;
-      }),
+      update: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: rawCard, error: null }),
     };
-    const client = { from: vi.fn().mockReturnValue(chain) } as any;
+    const client = { from: vi.fn().mockReturnValue(chain) } as unknown as SupabaseClient;
 
-    // first call is select, second is update — both use same chain
     chain.eq.mockImplementation(() => ({
       ...chain,
       single: vi.fn().mockResolvedValue({ data: rawCard, error: null }),
