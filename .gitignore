@@ -21,7 +21,7 @@ mobile/.expo/metro/
 mobile/.expo/devices.json
 # Electron
 out/
-app/
+/app/
 release/
 
 # Next.js
